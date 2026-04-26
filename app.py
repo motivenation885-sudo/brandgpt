@@ -33,7 +33,7 @@ st.markdown("""
 
 # Initialize Gemini
 try:
-    api_key = st.secrets["GEMINI_API_KEY"]
+    api_key = st.secrets[AIzaSyCoueptT_rP-lDJW-ovhdDG7olfwM4WLww]
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
 except Exception:
