@@ -1,5 +1,5 @@
 streamlit
-grok
+groq
 pandas
 gspread
 oauth2client
