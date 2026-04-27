@@ -30,7 +30,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize Gemini
-client = Groq(api_key="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")
+try:
+    api_key = st.secrets["GROQ_API_KEY"]
+    client = Groq(api_key=api_key)
+except Exception:
+    st.error("⚠️ Groq API key not found. Please add it in Streamlit secrets.")
+    st.stop()
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
