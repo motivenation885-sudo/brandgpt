@@ -1,7 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
-import json
-
+from groq import Groq
 # Page config
 st.set_page_config(
     page_title="BrandBot",
@@ -32,14 +30,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Initialize Gemini
-try:
-    api_key = "AIzaSyCoueptT_rP-lDJW-ovhdDG7olfwM4WLww"
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.0-flash')
-except Exception:
-    st.error("⚠️ Gemini API key not found. Please add it in Streamlit secrets.")
-    st.stop()
-
+client = Groq(api_key="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")
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -98,14 +89,22 @@ Yaad rakho — tera goal hai customer ki genuinely help karna. Sale naturally aa
 def chat_with_brand(user_message, brand_config, chat_history):
     system_prompt = get_system_prompt(brand_config)
     
-    # Build conversation history for Gemini
-    history = []
-    for msg in chat_history[:-1]:  # Exclude latest message
-        role = "user" if msg["role"] == "user" else "model"
-        history.append({
-            "role": role,
-            "parts": [msg["content"]]
+    messages = [{"role": "system", "content": system_prompt}]
+    
+    for msg in chat_history:
+        messages.append({
+            "role": msg["role"],
+            "content": msg["content"]
         })
+    
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=messages,
+        max_tokens=500,
+        temperature=0.8
+    )
+    
+    return response.choices[0].message.content
     
     # Start chat with history
     chat = model.start_chat(history=history)
