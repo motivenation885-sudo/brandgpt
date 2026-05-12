@@ -1,7 +1,8 @@
 """
-Halo — WhatsApp Webhook
-Single file, no over-engineering.
-POST /webhook → Twilio → Groq → TwiML reply
+Halo — WhatsApp Webhook (Flask)
+POST /webhook  → Twilio → Groq → TwiML reply
+GET  /webhook  → health check JSON
+GET  /webhook-test → plain text health
 """
 
 from __future__ import annotations
@@ -11,12 +12,12 @@ import os
 import time
 import json
 from xml.sax.saxutils import escape
-
-import tornado.web
-import tornado.ioloop
 from concurrent.futures import ThreadPoolExecutor
+
+from flask import Flask, request, Response
 from groq import Groq, APITimeoutError
 
+app = Flask(__name__)
 log = logging.getLogger("halo.webhook")
 _executor = ThreadPoolExecutor(max_workers=4)
 
@@ -120,7 +121,6 @@ def _send_telegram_alert(sender: str, message: str) -> None:
         return
     try:
         import requests
-
         text = f"HANDOFF ALERT\nCustomer: {sender}\nMessage: {message}\nTime: {time.strftime('%H:%M:%S')}"
         requests.post(
             f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
@@ -160,77 +160,65 @@ def _twiml(text: str) -> str:
     return f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{escape(text)}</Message></Response>'
 
 
-class WebhookHandler(tornado.web.RequestHandler):
-    async def get(self):
-        self.set_header("Content-Type", "application/json")
-        self.write('{"status": "Halo webhook live"}')
+# ── Routes ────────────────────────────────────────────────────────────────────
 
-    async def post(self):
-        self.set_header("Content-Type", "text/xml; charset=utf-8")
-        sender = (self.get_body_argument("From", default="") or "").strip()
-        message = (self.get_body_argument("Body", default="") or "").strip()
+@app.route("/webhook", methods=["GET"])
+def webhook_get():
+    return {"status": "Halo webhook live"}, 200
 
-        if not sender or not message:
-            self.write(_twiml("Message nahi mila. Dobara try karo."))
-            return
 
-        brand = _load_brand()
-        if brand is None:
-            self.write(
-                _twiml(
-                    "Brand setup nahi hai. Pehle Halo app mein brand configure karo."
-                )
-            )
-            return
+@app.route("/webhook-test", methods=["GET"])
+def webhook_test():
+    return Response("Halo webhook is alive", mimetype="text/plain")
 
-        if _paused.get(sender, 0) > time.time():
-            self.write('<?xml version="1.0" encoding="UTF-8"?><Response/>')
-            return
 
-        if message.lower().strip() in {"reset", "clear", "/reset"}:
-            _conversations.pop(sender, None)
-            self.write(
-                _twiml(
-                    f"Conversation reset! Main {brand['name']} ka assistant hoon, kaise help karoon?"
-                )
-            )
-            return
+@app.route("/webhook", methods=["POST"])
+def webhook_post():
+    sender = (request.form.get("From", "") or "").strip()
+    message = (request.form.get("Body", "") or "").strip()
 
-        needs_human = await tornado.ioloop.IOLoop.current().run_in_executor(
-            _executor, _needs_human, message
+    if not sender or not message:
+        return Response(_twiml("Message nahi mila. Dobara try karo."), mimetype="text/xml")
+
+    brand = _load_brand()
+    if brand is None:
+        return Response(
+            _twiml("Brand setup nahi hai. Pehle Halo app mein brand configure karo."),
+            mimetype="text/xml",
         )
-        if needs_human:
-            _send_telegram_alert(sender, message)
-            _paused[sender] = time.time() + HANDOFF_COOLDOWN
-            _conversations.pop(sender, None)
-            self.write(
-                _twiml(
-                    "I understand this needs personal attention. "
-                    "Let me connect you with our team — they'll reach out shortly! 🙏"
-                )
-            )
-            return
 
-        try:
-            reply = await tornado.ioloop.IOLoop.current().run_in_executor(
-                _executor, _generate_reply, brand, sender, message
-            )
-        except APITimeoutError:
-            reply = "Thodi der mein dobara try karo!"
-        except Exception:
-            log.exception("Reply generation failed")
-            reply = "Kuch issue aa gaya. Thodi der mein dobara try karo."
+    if _paused.get(sender, 0) > time.time():
+        return Response('<?xml version="1.0" encoding="UTF-8"?><Response/>', mimetype="text/xml")
 
-        self.write(_twiml(reply))
+    if message.lower().strip() in {"reset", "clear", "/reset"}:
+        _conversations.pop(sender, None)
+        return Response(
+            _twiml(f"Conversation reset! Main {brand['name']} ka assistant hoon, kaise help karoon?"),
+            mimetype="text/xml",
+        )
+
+    if _needs_human(message):
+        _send_telegram_alert(sender, message)
+        _paused[sender] = time.time() + HANDOFF_COOLDOWN
+        _conversations.pop(sender, None)
+        return Response(
+            _twiml(
+                "I understand this needs personal attention. "
+                "Let me connect you with our team — they'll reach out shortly! 🙏"
+            ),
+            mimetype="text/xml",
+        )
+
+    try:
+        reply = _generate_reply(brand, sender, message)
+    except APITimeoutError:
+        reply = "Thodi der mein dobara try karo!"
+    except Exception:
+        log.exception("Reply generation failed")
+        reply = "Kuch issue aa gaya. Thodi der mein dobara try karo."
+
+    return Response(_twiml(reply), mimetype="text/xml")
 
 
-class WebhookTestHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.set_header("Content-Type", "text/plain")
-        self.write("Halo webhook is alive")
-
-
-HANDLERS = [
-    (r"/webhook", WebhookHandler),
-    (r"/webhook-test", WebhookTestHandler),
-]
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=False)

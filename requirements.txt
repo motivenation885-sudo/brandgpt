@@ -1,5 +1,7 @@
 streamlit
 groq
+flask
 pandas
 gspread
 oauth2client
+requests
