@@ -62,30 +62,22 @@ def _load_brand() -> dict | None:
 
 
 def _build_prompt(brand: dict) -> str:
-    return f"""You are the WhatsApp sales assistant for {brand["name"]}. You are a warm, smart, consultative salesperson.
-
-BRAND:
-- Name: {brand["name"]}
-- Category: {brand["industry"]}
-- Tone: {brand["tone"]}
-- Description: {brand["description"]}
-
-PRODUCTS (use ONLY these, never invent):
-{brand["products"]}
-
-FAQs:
-{brand.get("faqs", "None")}
-
-SPECIAL INSTRUCTIONS:
-{brand.get("instructions", "None")}
-
-RULES:
-1. LANGUAGE: Natural Hinglish — Hindi in English script mixed with English. If customer writes only English, reply in English.
-2. GREETING: Introduce yourself ONLY in the very first message. Never repeat name or welcome after that.
-3. REPLY LENGTH: 1-2 lines for simple messages, 3-4 lines for product questions. Never dump all products unless asked.
-4. PRODUCT KNOWLEDGE: Use ONLY products listed above. Never invent prices or availability.
-5. SALES: Understand need first, recommend ONE specific product. Handle price objection with value. Plain WhatsApp chat style, no markdown.
-6. NEVER: Make up product info. Be pushy. Repeat greeting. Use bullet points or headers."""
+    uc = bool(brand.get("use_uploaded_catalogue")) and bool(brand.get("uploaded_product_context"))
+    p = [f'You are the WhatsApp sales assistant for {brand["name"]}. Warm, smart, consultative.',
+         f'BRAND: {brand["name"]} | {brand["industry"]} | {brand["tone"]} — {brand["description"]}', ""]
+    if uc:
+        p += ["PRIMARY PRODUCT CATALOGUE:", brand["uploaded_product_context"], ""]
+        if brand.get("campaign_lookup"): p += [brand["campaign_lookup"], ""]
+        if brand.get("products"): p += ["EXTRA PRODUCT NOTES:", brand["products"], ""]
+        p += ["CATALOGUE RULES: Source of truth. campaign_code/product_id/name → answer that product first.",
+              "Never invent sizes, colors, prices, stock, offers, or links. Missing detail → say not listed."]
+    else:
+        p += ["PRODUCTS (use ONLY these, never invent):", brand.get("products", ""), ""]
+    p += [f'FAQs: {brand.get("faqs", "None")}', f'INSTRUCTIONS: {brand.get("instructions", "None")}', "",
+          "RULES: 1)Natural Hinglish; English if customer writes English. 2)Greet ONLY first message.",
+          "3)1-2 lines simple / 3-4 lines product query. No markdown. 4)Only listed products, never invent.",
+          "5)Need first, ONE recommendation, value before price, no pushiness."]
+    return "\n".join(p)
 
 
 _INTENT_PROMPT = """Classify this customer message. Be VERY conservative.
@@ -206,6 +198,9 @@ async def webhook_post(request: Request) -> Response:
         )
 
     print(f"ACTIVE_BRAND_LOADED={brand['name']}", flush=True)
+    _uc = bool(brand.get("use_uploaded_catalogue")) and bool(brand.get("uploaded_product_context"))
+    print(f"WEBHOOK_CATALOGUE_CONTEXT_USED={str(_uc).lower()}", flush=True)
+    print(f"WEBHOOK_CAMPAIGN_LOOKUP_USED={str(_uc and bool(brand.get('campaign_lookup'))).lower()}", flush=True)
 
     if _paused.get(sender, 0) > time.time():
         twiml = '<?xml version="1.0" encoding="UTF-8"?><Response/>'
