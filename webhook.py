@@ -1,24 +1,25 @@
 """
-Halo — WhatsApp Webhook (Flask)
-Runs on port 5001. Give Twilio the port-5001 Replit URL.
-POST /webhook  → Twilio → Groq → TwiML reply
-GET  /webhook  → health check JSON
-GET  /webhook-test → plain text
+Halo — WhatsApp Webhook
+Mounted as Starlette routes inside Streamlit's own Uvicorn server.
+Streamlit 1.57 uses Starlette/Uvicorn (NOT Tornado).
+serve.py monkeypatches create_starlette_app to prepend these routes.
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import time
-import json
-from xml.sax.saxutils import escape
 from concurrent.futures import ThreadPoolExecutor
+from xml.sax.saxutils import escape
 
-from flask import Flask, request, Response
+from starlette.requests import Request
+from starlette.responses import PlainTextResponse, Response
+from starlette.routing import Route
+
 from groq import Groq, APITimeoutError
 
-app = Flask(__name__)
 log = logging.getLogger("halo.webhook")
 _executor = ThreadPoolExecutor(max_workers=4)
 
@@ -53,7 +54,7 @@ _BRAND_FILE = "active_brand.json"
 def _load_brand() -> dict | None:
     try:
         if os.path.exists(_BRAND_FILE):
-            with open(_BRAND_FILE, "r") as f:
+            with open(_BRAND_FILE) as f:
                 return json.load(f)
     except Exception:
         pass
@@ -81,10 +82,10 @@ SPECIAL INSTRUCTIONS:
 RULES:
 1. LANGUAGE: Natural Hinglish — Hindi in English script mixed with English. If customer writes only English, reply in English.
 2. GREETING: Introduce yourself ONLY in the very first message. Never repeat name or welcome after that.
-3. REPLY LENGTH: Simple message (hi, ok, thanks) = 1-2 lines. Product question = 3-4 lines. Never dump all products unless asked.
+3. REPLY LENGTH: 1-2 lines for simple messages, 3-4 lines for product questions. Never dump all products unless asked.
 4. PRODUCT KNOWLEDGE: Use ONLY products listed above. Never invent prices or availability.
-5. SALES: Understand need first, recommend ONE specific product. Handle price objection with value. No bullet points, no headers, plain WhatsApp chat style.
-6. NEVER: Make up product info. Be pushy. Repeat greeting. Use bullet points or markdown."""
+5. SALES: Understand need first, recommend ONE specific product. Handle price objection with value. Plain WhatsApp chat style, no markdown.
+6. NEVER: Make up product info. Be pushy. Repeat greeting. Use bullet points or headers."""
 
 
 _INTENT_PROMPT = """Classify this customer message. Be VERY conservative.
@@ -95,7 +96,7 @@ NEEDS_HUMAN only if:
 - Very abusive language
 - Refund for specific past order
 
-BOT_CAN_HANDLE for everything else including price concerns, product questions, return policy, delivery, comparisons, discount requests.
+BOT_CAN_HANDLE for everything else.
 
 Reply ONE word only: NEEDS_HUMAN or BOT_CAN_HANDLE"""
 
@@ -122,7 +123,10 @@ def _send_telegram_alert(sender: str, message: str) -> None:
         return
     try:
         import requests as req
-        text = f"HANDOFF ALERT\nCustomer: {sender}\nMessage: {message}\nTime: {time.strftime('%H:%M:%S')}"
+        text = (
+            f"HANDOFF ALERT\nCustomer: {sender}\n"
+            f"Message: {message}\nTime: {time.strftime('%H:%M:%S')}"
+        )
         req.post(
             f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
             json={"chat_id": TELEGRAM_CHAT_ID, "text": text},
@@ -147,8 +151,7 @@ def _generate_reply(brand: dict, sender: str, message: str) -> str:
     )
     reply = resp.choices[0].message.content.strip()
 
-    if sender not in _conversations:
-        _conversations[sender] = []
+    _conversations.setdefault(sender, [])
     _conversations[sender].append({"role": "user", "content": message})
     _conversations[sender].append({"role": "assistant", "content": reply})
     if len(_conversations[sender]) > MAX_HISTORY:
@@ -158,82 +161,98 @@ def _generate_reply(brand: dict, sender: str, message: str) -> str:
 
 
 def _twiml(text: str) -> str:
-    return f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{escape(text)}</Message></Response>'
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        f"<Response><Message>{escape(text)}</Message></Response>"
+    )
 
 
-def _send_twiml(text: str):
-    """Build TwiML, log it, and return a Flask Response with correct headers."""
+def _twiml_response(text: str) -> Response:
     twiml = _twiml(text)
-    print(f"[HALO TWIML RESPONSE]\n{twiml}\n", flush=True)
-    resp = Response(twiml, status=200, mimetype="text/xml")
-    resp.headers["Content-Type"] = "text/xml; charset=utf-8"
-    return resp
+    print(f"FINAL_TWIML_RETURNED={twiml}", flush=True)
+    return Response(
+        content=twiml,
+        status_code=200,
+        media_type="text/xml",
+        headers={"Content-Type": "text/xml; charset=utf-8"},
+    )
 
 
-@app.route("/webhook", methods=["GET"])
-def webhook_get():
-    return {"status": "Halo webhook live"}, 200
+# ── Starlette route handlers ──────────────────────────────────────────────────
+
+async def webhook_get(request: Request) -> Response:
+    print("WEBHOOK_GET_OK", flush=True)
+    return PlainTextResponse("Webhook alive")
 
 
-@app.route("/webhook-test", methods=["GET"])
-def webhook_test():
-    return Response("Webhook is alive", mimetype="text/plain")
+async def webhook_post(request: Request) -> Response:
+    form = await request.form()
 
+    sender  = (form.get("From", "") or "").strip()
+    message = (form.get("Body",  "") or "").strip()
 
-@app.route("/webhook", methods=["POST"])
-def webhook_post():
-    # ── 1. Log the full incoming request ─────────────────────────────────────
-    print("[HALO INCOMING REQUEST]", flush=True)
-    print(f"  Method : {request.method}", flush=True)
-    print(f"  URL    : {request.url}", flush=True)
-    print(f"  Headers: {dict(request.headers)}", flush=True)
-    print(f"  Form   : {dict(request.form)}", flush=True)
-
-    sender  = (request.form.get("From", "") or "").strip()
-    message = (request.form.get("Body", "") or "").strip()
-
-    print(f"  From   : {sender}", flush=True)
-    print(f"  Body   : {message}", flush=True)
+    print("WEBHOOK_POST_RECEIVED", flush=True)
+    print(f"FROM={sender}",        flush=True)
+    print(f"BODY={message}",       flush=True)
 
     if not sender or not message:
-        return _send_twiml("Message nahi mila. Dobara try karo.")
+        return _twiml_response("Message nahi mila. Dobara try karo.")
 
     brand = _load_brand()
     if brand is None:
-        return _send_twiml("Brand setup nahi hai. Pehle Halo app mein brand configure karo.")
+        print("ACTIVE_BRAND_LOADED=NONE", flush=True)
+        return _twiml_response(
+            "Brand setup nahi hai. Pehle Halo app mein brand configure karo."
+        )
+
+    print(f"ACTIVE_BRAND_LOADED={brand['name']}", flush=True)
 
     if _paused.get(sender, 0) > time.time():
         twiml = '<?xml version="1.0" encoding="UTF-8"?><Response/>'
-        print(f"[HALO TWIML RESPONSE]\n{twiml}\n", flush=True)
-        resp = Response(twiml, status=200, mimetype="text/xml")
-        resp.headers["Content-Type"] = "text/xml; charset=utf-8"
-        return resp
+        print(f"FINAL_TWIML_RETURNED={twiml}", flush=True)
+        return Response(
+            content=twiml,
+            status_code=200,
+            media_type="text/xml",
+            headers={"Content-Type": "text/xml; charset=utf-8"},
+        )
 
     if message.lower().strip() in {"reset", "clear", "/reset"}:
         _conversations.pop(sender, None)
-        return _send_twiml(
+        return _twiml_response(
             f"Conversation reset! Main {brand['name']} ka assistant hoon, kaise help karoon?"
         )
 
-    if _needs_human(message):
+    import asyncio
+    loop = asyncio.get_event_loop()
+
+    needs_human = await loop.run_in_executor(_executor, _needs_human, message)
+    if needs_human:
         _send_telegram_alert(sender, message)
         _paused[sender] = time.time() + HANDOFF_COOLDOWN
         _conversations.pop(sender, None)
-        return _send_twiml(
+        return _twiml_response(
             "I understand this needs personal attention. "
             "Let me connect you with our team — they'll reach out shortly! 🙏"
         )
 
     try:
-        reply = _generate_reply(brand, sender, message)
+        reply = await loop.run_in_executor(
+            _executor, _generate_reply, brand, sender, message
+        )
+        print(f"FINAL_REPLY={reply}", flush=True)
     except APITimeoutError:
         reply = "Thodi der mein dobara try karo!"
     except Exception:
         log.exception("Reply generation failed")
         reply = "Kuch issue aa gaya. Thodi der mein dobara try karo."
 
-    return _send_twiml(reply)
+    return _twiml_response(reply)
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=False)
+# ── Routes list imported by serve.py ─────────────────────────────────────────
+WEBHOOK_ROUTES = [
+    Route("/webhook",      endpoint=webhook_get,  methods=["GET"]),
+    Route("/webhook",      endpoint=webhook_post, methods=["POST"]),
+    Route("/webhook-test", endpoint=webhook_get,  methods=["GET"]),
+]

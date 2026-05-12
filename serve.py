@@ -1,23 +1,19 @@
 """
-serve.py — starts Flask webhook (port 5001) + Streamlit UI (port 5000).
+serve.py — mounts /webhook inside Streamlit's own Starlette/Uvicorn server.
 
-Architecture:
-  - Streamlit 1.57 uses Starlette/Uvicorn — Tornado handler mounting is not possible.
-  - Flask webhook runs on port 5001 in a daemon thread.
-  - Streamlit runs on port 5000 via subprocess (main process).
-  - Replit exposes BOTH ports publicly with separate URLs.
+How it works:
+  Streamlit 1.57 uses Starlette + Uvicorn (NOT Tornado).
+  We monkeypatch `create_streamlit_routes` before bootstrap starts.
+  Our webhook routes are prepended to Streamlit's route list so they
+  are matched FIRST — before Streamlit's SPA catch-all route.
+  Everything runs on port 5000. No Flask. No second server.
 
-Twilio webhook URL → https://8000-<your-replit-dev-domain>/webhook
-Streamlit UI      → https://<your-replit-dev-domain>  (port 5000)
-
+Twilio webhook URL → https://<your-replit-dev-domain>/webhook
 Run: python serve.py
 """
 
-import subprocess
 import sys
-import threading
 import logging
-import time
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,34 +21,44 @@ logging.basicConfig(
 )
 log = logging.getLogger("halo.serve")
 
+# ── Monkeypatch create_streamlit_routes BEFORE importing bootstrap ────────────
+# Starlette processes routes in order. Prepending here means /webhook is
+# checked before Streamlit's catch-all SPA route gets a chance to intercept.
 
-def run_flask():
-    from webhook import app
-    log.info("Flask webhook starting on 0.0.0.0:8000 ...")
-    app.run(host="0.0.0.0", port=8000, debug=False, use_reloader=False)
+log.info("Patching create_streamlit_routes to mount /webhook ...")
+
+import streamlit.web.server.starlette.starlette_app as _st_mod
+
+_orig_create_routes = _st_mod.create_streamlit_routes
 
 
-def main():
-    # Start Flask webhook in a background daemon thread
-    t = threading.Thread(target=run_flask, daemon=True, name="flask-webhook")
-    t.start()
-
-    # Brief pause so Flask logs print before Streamlit floods stdout
-    time.sleep(1)
-
-    log.info("Streamlit UI starting on 0.0.0.0:5000 ...")
-    subprocess.run(
-        [
-            sys.executable, "-m", "streamlit", "run", "app.py",
-            "--server.port=5000",
-            "--server.address=0.0.0.0",
-            "--server.headless=true",
-            "--server.enableCORS=false",
-            "--server.enableXsrfProtection=false",
-        ],
-        check=False,
+def _patched_create_routes(runtime):
+    from webhook import WEBHOOK_ROUTES
+    original_routes = _orig_create_routes(runtime)
+    combined = WEBHOOK_ROUTES + list(original_routes)
+    log.info(
+        "SUCCESS: %d webhook route(s) prepended. Total Starlette routes: %d",
+        len(WEBHOOK_ROUTES),
+        len(combined),
     )
+    return combined
 
 
-if __name__ == "__main__":
-    main()
+_st_mod.create_streamlit_routes = _patched_create_routes
+log.info("Monkeypatch applied to create_streamlit_routes.")
+
+# ── Start Streamlit in-process (patch must be in the same process) ────────────
+log.info("Starting Streamlit on port 5000 ...")
+
+sys.argv = [
+    "streamlit", "run", "app.py",
+    "--server.port=5000",
+    "--server.address=0.0.0.0",
+    "--server.headless=true",
+    "--server.enableCORS=false",
+    "--server.enableXsrfProtection=false",
+]
+
+from streamlit.web import bootstrap
+# bootstrap.run(main_script_path, is_hello: bool, args, flag_options)
+bootstrap.run("app.py", False, [], {})
