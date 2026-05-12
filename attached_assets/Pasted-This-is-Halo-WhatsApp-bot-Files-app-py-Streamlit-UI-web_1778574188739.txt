@@ -1,0 +1,93 @@
+This is Halo WhatsApp bot.
+
+Files:
+- app.py = Streamlit UI
+- webhook.py = Tornado WhatsApp handler, reads active_brand.json
+- serve.py = starts both
+
+Task:
+Make the UI look premium, modern, and SaaS-like. Change ONLY app.py.
+
+STRICT RULES:
+1. Do not change webhook.py.
+2. Do not change serve.py.
+3. Do not change bot logic.
+4. Do not change get_system_prompt behavior except visible app branding text if needed.
+5. Do not change Groq model/API logic.
+6. Do not add product_db, RAG, offer_db, sales_engine, database, auth, login, or new backend features.
+7. Keep active_brand.json save behavior exactly working.
+8. Keep Streamlit chat working exactly as before.
+9. Only improve UI, layout, copy, spacing, colors, sidebar, cards, and visual hierarchy.
+
+Branding:
+Rename visible app branding from “BrandBot” to “Halo”.
+Use premium positioning:
+“Halo — AI WhatsApp Sales Assistant”
+
+Design style:
+- Dark premium SaaS dashboard
+- Black / near-black background
+- Glassmorphism cards
+- Purple/indigo accent
+- Clean typography
+- Rounded cards
+- Better spacing
+- Premium sidebar
+- Professional setup page
+- Chat interface should feel like a polished app, not a lonely Streamlit website
+
+UI improvements needed:
+
+SETUP PAGE:
+1. Add premium hero section:
+   - Title: “Launch your AI WhatsApp Sales Assistant”
+   - Subtitle: “Train Halo with your brand details, products, FAQs, and policies.”
+   - Small badge: “Powered by Halo”
+2. Make setup form look like a premium onboarding card.
+3. Split form into clear sections:
+   - Brand Identity
+   - Products & Offers
+   - FAQs & Policies
+   - AI Instructions
+4. Improve placeholders, labels, helper text.
+5. Make launch button premium:
+   “Launch Halo Assistant”
+6. Keep same required fields:
+   brand name, industry, tone, description, products.
+
+CHAT PAGE:
+1. Add premium top header:
+   - Brand name
+   - Industry
+   - Tone
+   - Status pill: “Live Assistant”
+2. Make chat area more polished:
+   - better message cards
+   - darker input area
+   - cleaner assistant/user styling
+3. Sidebar should show:
+   - Halo logo
+   - Active brand info
+   - message count
+   - clear chat button
+   - reset/new brand button
+   - test prompts in a premium card
+4. Move “Reset & New Brand” to sidebar instead of top-right if possible.
+5. Keep test prompt buttons working.
+
+CSS:
+1. Hide Streamlit default chrome if possible.
+2. Use custom CSS only inside app.py.
+3. Use stable Streamlit selectors where possible.
+4. Do not use external images or assets.
+5. Avoid overcomplicated CSS that can break.
+
+Important:
+Do not modify the assistant response logic. This is UI-only.
+
+After changes:
+- Print exact files changed.
+- Confirm only app.py changed.
+- Confirm webhook.py and serve.py untouched.
+- Confirm active_brand.json still saves brand config on launch.
+- Confirm chat still sends messages to Groq and displays replies.
