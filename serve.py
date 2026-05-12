@@ -7,7 +7,7 @@ Architecture:
   - Streamlit runs on port 5000 via subprocess (main process).
   - Replit exposes BOTH ports publicly with separate URLs.
 
-Twilio webhook URL → https://5001-<your-replit-dev-domain>/webhook
+Twilio webhook URL → https://8000-<your-replit-dev-domain>/webhook
 Streamlit UI      → https://<your-replit-dev-domain>  (port 5000)
 
 Run: python serve.py
@@ -28,8 +28,8 @@ log = logging.getLogger("halo.serve")
 
 def run_flask():
     from webhook import app
-    log.info("Flask webhook starting on 0.0.0.0:5001 ...")
-    app.run(host="0.0.0.0", port=5001, debug=False, use_reloader=False)
+    log.info("Flask webhook starting on 0.0.0.0:8000 ...")
+    app.run(host="0.0.0.0", port=8000, debug=False, use_reloader=False)
 
 
 def main():

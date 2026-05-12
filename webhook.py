@@ -22,7 +22,7 @@ app = Flask(__name__)
 log = logging.getLogger("halo.webhook")
 _executor = ThreadPoolExecutor(max_workers=4)
 
-GROQ_MODEL = "llama3-70b-8192"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 GROQ_TIMEOUT = 12
 MAX_TOKENS = 400
 TEMPERATURE = 0.7
@@ -236,4 +236,4 @@ def webhook_post():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=False)
+    app.run(host="0.0.0.0", port=8000, debug=False)
