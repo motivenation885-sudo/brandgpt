@@ -1,0 +1,208 @@
+This is Halo WhatsApp bot.
+
+Files:
+- app.py = Streamlit UI + brand setup + chat
+- webhook.py = Tornado WhatsApp webhook, reads active_brand.json
+- serve.py = starts both
+
+TASK:
+Fix sidebar collapse/recovery problem and add saved brand profiles so I don’t have to enter brand details again and again.
+
+STRICT RULES:
+1. Change ONLY app.py unless absolutely necessary.
+2. Do NOT change webhook.py.
+3. Do NOT change serve.py.
+4. Do NOT change Groq/chat logic.
+5. Do NOT add database/auth/login/backend architecture.
+6. Keep active_brand.json behavior working exactly.
+7. Keep current premium UI style.
+8. Do not break CSV/Excel upload support.
+9. Do not remove manual brand/product entry.
+10. Do not add overbuilt features.
+
+==================================================
+PART 1 — FIX SIDEBAR COLLAPSE PROBLEM
+==================================================
+
+Current problem:
+If I close/collapse Streamlit sidebar, it closes completely and there is no visible option to recover/open it again.
+
+Fix:
+1. Do NOT permanently hide Streamlit sidebar recovery/collapse controls with CSS.
+2. Search app.py CSS for selectors like:
+   - [data-testid="stSidebarCollapsedControl"]
+   - [data-testid="stSidebarCollapseButton"]
+   - [data-testid="baseButton-headerNoPadding"]
+   - any CSS that sets sidebar controls to display:none or visibility:hidden
+3. Remove or override the CSS that hides the collapsed sidebar control.
+4. Make the collapsed sidebar control visible and usable.
+5. Keep sidebar premium-looking, but do not disable Streamlit’s ability to reopen it.
+6. If needed, set:
+   initial_sidebar_state="expanded"
+   in st.set_page_config, but still allow user to recover sidebar after collapse.
+7. Add a visible top hint or small button in main page if possible:
+   “Open sidebar from the arrow on the left if controls are hidden”
+   But do not create a fake sidebar system.
+
+Important:
+The user must be able to close and reopen the sidebar.
+
+==================================================
+PART 2 — SAVED BRAND PROFILES
+==================================================
+
+Goal:
+Add simple local profile saving/loading using a JSON file so I don’t have to enter brand details again and again.
+
+Use file:
+saved_profiles.json
+
+PROFILE SAVE DATA:
+Each saved profile should store the full brand config currently saved to active_brand.json, including:
+- name
+- industry
+- tone
+- description
+- products
+- faqs
+- instructions
+- uploaded_products
+- uploaded_product_columns
+- uploaded_product_context
+- campaign_lookup
+- use_uploaded_catalogue
+
+REQUIRED FUNCTIONS IN app.py:
+Add helper functions:
+
+load_saved_profiles() -> dict
+save_saved_profiles(profiles: dict) -> None
+save_profile(profile_name: str, brand_config: dict) -> None
+delete_profile(profile_name: str) -> None
+load_profile(profile_name: str) -> dict | None
+
+If saved_profiles.json does not exist, return empty dict.
+
+If saved_profiles.json is corrupted:
+- show a friendly warning
+- reset to empty profiles
+- do not crash app
+
+==================================================
+PART 3 — SETUP PAGE PROFILE UI
+==================================================
+
+Add a premium section called:
+“Saved Brand Profiles”
+
+It should include:
+1. Dropdown/selectbox:
+   “Load saved profile”
+2. Button:
+   “Load Profile”
+3. Button:
+   “Delete Profile”
+4. If no profiles exist, show:
+   “No saved profiles yet.”
+5. If profile loaded, prefill setup form fields with saved profile data.
+6. Do not force user to re-upload CSV if saved profile already has uploaded_products and uploaded_product_context saved.
+
+FORM PREFILL:
+When a saved profile is loaded:
+- brand_name field should be prefilled
+- industry selected correctly
+- tone selected correctly
+- description prefilled
+- products prefilled
+- faqs prefilled
+- instructions prefilled
+- uploaded catalogue status should show:
+  “Saved catalogue loaded: X products”
+- use_uploaded_catalogue should remain true/false based on saved profile
+
+SAVE PROFILE:
+When user launches Halo assistant successfully:
+1. Save active_brand.json as before.
+2. Also save/update this profile inside saved_profiles.json using brand name as key.
+3. Show success message:
+   “Profile saved. You can load this brand later.”
+
+==================================================
+PART 4 — CHAT PAGE SIDEBAR UX
+==================================================
+
+Fix sidebar so it feels premium and useful.
+
+Sidebar should show:
+- Halo logo/title
+- Active Brand
+- Industry
+- Tone
+- Product source:
+  uploaded catalogue / manual products
+- Uploaded product count if available
+- Campaign code count if available
+- Message count
+- Clear chat button
+- Save current profile button
+- Reset/New Brand button
+
+SIDEBAR UX:
+- improve spacing
+- use cards/sections
+- keep buttons full-width
+- avoid duplicate reset buttons
+- keep sidebar readable in dark theme
+- do not hide important controls
+- do not hide the sidebar reopen/collapse controls
+
+==================================================
+PART 5 — ACTIVE BRAND BEHAVIOR
+==================================================
+
+When a saved profile is loaded and launched:
+1. st.session_state.brand_config must update.
+2. st.session_state.setup_done must become true.
+3. active_brand.json must be overwritten with loaded profile.
+4. Chat welcome message should use loaded brand name.
+5. Webhook can then read active_brand.json and use the loaded profile.
+
+If user clicks “Save current profile” in chat sidebar:
+- save current st.session_state.brand_config to saved_profiles.json
+- show success message
+
+If user clicks “Reset/New Brand”:
+- setup_done false
+- messages cleared
+- brand_config cleared
+- do not delete saved profiles
+
+DO NOT:
+- Do not change webhook.py.
+- Do not touch Twilio route.
+- Do not create database.
+- Do not require login.
+- Do not remove CSV upload.
+- Do not remove existing manual setup.
+- Do not break active_brand.json.
+- Do not hide the sidebar recovery/open control.
+
+FINAL CHECKS:
+After changes, run app and confirm:
+1. Sidebar can be collapsed and reopened.
+2. New profile can be created and saved.
+3. saved_profiles.json is created.
+4. App can reload saved profile.
+5. Loaded profile pre-fills fields.
+6. Loaded profile can launch chat.
+7. active_brand.json updates after loading profile.
+8. CSV catalogue data is preserved in saved profile.
+9. Sidebar looks premium and not broken.
+10. Only app.py changed.
+
+Print:
+- exact files changed
+- CSS selectors changed/removed for sidebar recovery
+- functions added
+- saved_profiles.json behavior
+- confirmation that webhook.py and serve.py were untouched
