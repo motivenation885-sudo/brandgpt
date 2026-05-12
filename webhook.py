@@ -1,8 +1,9 @@
 """
 Halo — WhatsApp Webhook (Flask)
+Runs on port 5001. Give Twilio the port-5001 Replit URL.
 POST /webhook  → Twilio → Groq → TwiML reply
 GET  /webhook  → health check JSON
-GET  /webhook-test → plain text health
+GET  /webhook-test → plain text
 """
 
 from __future__ import annotations
@@ -120,9 +121,9 @@ def _send_telegram_alert(sender: str, message: str) -> None:
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         return
     try:
-        import requests
+        import requests as req
         text = f"HANDOFF ALERT\nCustomer: {sender}\nMessage: {message}\nTime: {time.strftime('%H:%M:%S')}"
-        requests.post(
+        req.post(
             f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
             json={"chat_id": TELEGRAM_CHAT_ID, "text": text},
             timeout=5,
@@ -160,8 +161,6 @@ def _twiml(text: str) -> str:
     return f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{escape(text)}</Message></Response>'
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
-
 @app.route("/webhook", methods=["GET"])
 def webhook_get():
     return {"status": "Halo webhook live"}, 200
@@ -169,7 +168,7 @@ def webhook_get():
 
 @app.route("/webhook-test", methods=["GET"])
 def webhook_test():
-    return Response("Halo webhook is alive", mimetype="text/plain")
+    return Response("Webhook alive", mimetype="text/plain")
 
 
 @app.route("/webhook", methods=["POST"])

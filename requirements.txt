@@ -1,6 +1,7 @@
 streamlit
 groq
 flask
+tornado
 pandas
 gspread
 oauth2client
