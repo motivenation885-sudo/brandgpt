@@ -161,6 +161,15 @@ def _twiml(text: str) -> str:
     return f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{escape(text)}</Message></Response>'
 
 
+def _send_twiml(text: str):
+    """Build TwiML, log it, and return a Flask Response with correct headers."""
+    twiml = _twiml(text)
+    print(f"[HALO TWIML RESPONSE]\n{twiml}\n", flush=True)
+    resp = Response(twiml, status=200, mimetype="text/xml")
+    resp.headers["Content-Type"] = "text/xml; charset=utf-8"
+    return resp
+
+
 @app.route("/webhook", methods=["GET"])
 def webhook_get():
     return {"status": "Halo webhook live"}, 200
@@ -168,44 +177,51 @@ def webhook_get():
 
 @app.route("/webhook-test", methods=["GET"])
 def webhook_test():
-    return Response("Webhook alive", mimetype="text/plain")
+    return Response("Webhook is alive", mimetype="text/plain")
 
 
 @app.route("/webhook", methods=["POST"])
 def webhook_post():
-    sender = (request.form.get("From", "") or "").strip()
+    # ── 1. Log the full incoming request ─────────────────────────────────────
+    print("[HALO INCOMING REQUEST]", flush=True)
+    print(f"  Method : {request.method}", flush=True)
+    print(f"  URL    : {request.url}", flush=True)
+    print(f"  Headers: {dict(request.headers)}", flush=True)
+    print(f"  Form   : {dict(request.form)}", flush=True)
+
+    sender  = (request.form.get("From", "") or "").strip()
     message = (request.form.get("Body", "") or "").strip()
 
+    print(f"  From   : {sender}", flush=True)
+    print(f"  Body   : {message}", flush=True)
+
     if not sender or not message:
-        return Response(_twiml("Message nahi mila. Dobara try karo."), mimetype="text/xml")
+        return _send_twiml("Message nahi mila. Dobara try karo.")
 
     brand = _load_brand()
     if brand is None:
-        return Response(
-            _twiml("Brand setup nahi hai. Pehle Halo app mein brand configure karo."),
-            mimetype="text/xml",
-        )
+        return _send_twiml("Brand setup nahi hai. Pehle Halo app mein brand configure karo.")
 
     if _paused.get(sender, 0) > time.time():
-        return Response('<?xml version="1.0" encoding="UTF-8"?><Response/>', mimetype="text/xml")
+        twiml = '<?xml version="1.0" encoding="UTF-8"?><Response/>'
+        print(f"[HALO TWIML RESPONSE]\n{twiml}\n", flush=True)
+        resp = Response(twiml, status=200, mimetype="text/xml")
+        resp.headers["Content-Type"] = "text/xml; charset=utf-8"
+        return resp
 
     if message.lower().strip() in {"reset", "clear", "/reset"}:
         _conversations.pop(sender, None)
-        return Response(
-            _twiml(f"Conversation reset! Main {brand['name']} ka assistant hoon, kaise help karoon?"),
-            mimetype="text/xml",
+        return _send_twiml(
+            f"Conversation reset! Main {brand['name']} ka assistant hoon, kaise help karoon?"
         )
 
     if _needs_human(message):
         _send_telegram_alert(sender, message)
         _paused[sender] = time.time() + HANDOFF_COOLDOWN
         _conversations.pop(sender, None)
-        return Response(
-            _twiml(
-                "I understand this needs personal attention. "
-                "Let me connect you with our team — they'll reach out shortly! 🙏"
-            ),
-            mimetype="text/xml",
+        return _send_twiml(
+            "I understand this needs personal attention. "
+            "Let me connect you with our team — they'll reach out shortly! 🙏"
         )
 
     try:
@@ -216,7 +232,7 @@ def webhook_post():
         log.exception("Reply generation failed")
         reply = "Kuch issue aa gaya. Thodi der mein dobara try karo."
 
-    return Response(_twiml(reply), mimetype="text/xml")
+    return _send_twiml(reply)
 
 
 if __name__ == "__main__":
