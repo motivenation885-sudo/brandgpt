@@ -1,6 +1,8 @@
 import os
+import io
 import json
 import streamlit as st
+import pandas as pd
 from groq import Groq
 
 # ── Page config ──────────────────────────────────────────────────────────────
@@ -88,6 +90,38 @@ label, [data-testid="stWidgetLabel"] p {
     transform: translateY(-1px) !important;
 }
 
+/* ─── File uploader ─── */
+[data-testid="stFileUploader"] section {
+    background-color: #13131f !important;
+    border: 1px dashed rgba(139, 92, 246, 0.4) !important;
+    border-radius: 12px !important;
+}
+[data-testid="stFileUploader"] section:hover {
+    border-color: rgba(139, 92, 246, 0.7) !important;
+    background-color: #16162a !important;
+}
+[data-testid="stFileUploader"] button {
+    background: rgba(139, 92, 246, 0.18) !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+    color: #c4b5fd !important;
+    border-radius: 8px !important;
+}
+
+/* ─── Dataframe ─── */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(139, 92, 246, 0.18) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+/* ─── Checkbox ─── */
+[data-testid="stCheckbox"] label p {
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    font-size: 0.9rem !important;
+    color: #cbd5e1 !important;
+}
+
 /* ─── Divider ─── */
 hr { border-color: rgba(139, 92, 246, 0.15) !important; }
 
@@ -169,6 +203,12 @@ hr { border-color: rgba(139, 92, 246, 0.15) !important; }
     margin-bottom: 4px;
     margin-top: 20px;
 }
+.helper-text {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 6px 0 10px 0;
+    line-height: 1.5;
+}
 .glass-card {
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
@@ -177,6 +217,19 @@ hr { border-color: rgba(139, 92, 246, 0.15) !important; }
     margin-bottom: 20px;
     backdrop-filter: blur(12px);
 }
+.upload-summary {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 12px 0;
+}
+.upload-summary p {
+    margin: 2px 0;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+}
+.upload-summary strong { color: #34d399; font-weight: 700; }
 .chat-header {
     background: linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(109,40,217,0.06) 100%);
     border: 1px solid rgba(139, 92, 246, 0.2);
@@ -285,53 +338,292 @@ if "brand_config" not in st.session_state:
     st.session_state.brand_config = None
 if "setup_done" not in st.session_state:
     st.session_state.setup_done = False
+if "parsed_catalogue" not in st.session_state:
+    st.session_state.parsed_catalogue = None  # {"products":..., "columns":..., "context":..., "campaigns":...}
 
 
-# ── Core logic (unchanged) ────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# CATALOGUE PARSING HELPERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+REQUIRED_COLUMNS = ["product_id", "product_name", "price"]
+
+OPTIONAL_COLUMNS = [
+    "campaign_code", "category", "description", "sizes", "colors",
+    "material", "fabric", "fit", "stock_status", "best_for",
+    "upsell_product_ids", "offer_name", "offer_price",
+    "product_link", "delivery_note", "exchange_note",
+]
+
+
+def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """lowercase, strip, replace spaces with underscores."""
+    df = df.copy()
+    df.columns = [
+        str(c).strip().lower().replace(" ", "_").replace("-", "_")
+        for c in df.columns
+    ]
+    return df
+
+
+def parse_product_file(uploaded_file):
+    """
+    Returns: (products: list[dict], detected_columns: list[str], error: str | None)
+    """
+    if uploaded_file is None:
+        return [], [], None
+
+    name = (uploaded_file.name or "").lower()
+    try:
+        # Use getvalue() so re-runs and re-parses keep working.
+        # uploaded_file.read() consumes the stream and returns b"" on second call.
+        raw = uploaded_file.getvalue()
+        bio = io.BytesIO(raw)
+
+        if name.endswith(".csv"):
+            df = pd.read_csv(bio)
+        elif name.endswith(".xlsx") or name.endswith(".xls"):
+            try:
+                df = pd.read_excel(bio)
+            except ImportError:
+                return [], [], (
+                    "Excel parsing needs the 'openpyxl' library. "
+                    "Use a CSV file instead, or install openpyxl."
+                )
+        else:
+            return [], [], "Unsupported file type. Upload a .csv or .xlsx file."
+    except Exception as e:
+        return [], [], f"Could not read the file: {e}"
+
+    df = _normalize_columns(df)
+    detected = list(df.columns)
+
+    missing = [c for c in REQUIRED_COLUMNS if c not in detected]
+    if missing:
+        return [], detected, (
+            "Product sheet must include product_id, product_name, and price. "
+            f"Missing: {', '.join(missing)}."
+        )
+
+    df = df.dropna(how="all")
+    products = []
+    skipped = 0
+    for _, row in df.iterrows():
+        rec = {}
+        for col in detected:
+            val = row[col]
+            if pd.isna(val):
+                continue
+            rec[col] = str(val).strip()
+        # All three required fields must be present at row level
+        if rec.get("product_id") and rec.get("product_name") and rec.get("price"):
+            products.append(rec)
+        else:
+            skipped += 1
+
+    if skipped and not products:
+        return [], detected, (
+            "All rows are missing one of the required values "
+            "(product_id, product_name, price)."
+        )
+
+    return products, detected, None
+
+
+_LABELS = {
+    "product_id":         "Product ID",
+    "campaign_code":      "Campaign Code",
+    "product_name":       "Name",
+    "category":           "Category",
+    "price":              "Price",
+    "description":        "Description",
+    "sizes":              "Sizes",
+    "colors":             "Colors",
+    "material":           "Material",
+    "fabric":             "Fabric/Material",
+    "fit":                "Fit",
+    "stock_status":       "Stock",
+    "best_for":           "Best For",
+    "upsell_product_ids": "Upsell Product IDs",
+    "offer_name":         "Offer",
+    "offer_price":        "Offer Price",
+    "product_link":       "Product Link",
+    "delivery_note":      "Delivery Note",
+    "exchange_note":      "Exchange Note",
+}
+
+
+def _format_price(val: str) -> str:
+    s = str(val).strip()
+    if not s:
+        return s
+    # If already contains a currency symbol or letters, keep as-is
+    if any(ch in s for ch in "₹$€£") or any(c.isalpha() for c in s):
+        return s
+    try:
+        n = float(s)
+        if n == int(n):
+            return f"₹{int(n)}"
+        return f"₹{n}"
+    except Exception:
+        return s
+
+
+def format_product_catalogue_for_prompt(products):
+    """Convert product dicts into a clean readable block for the system prompt."""
+    if not products:
+        return ""
+
+    product_blocks = []
+    field_order = [
+        "product_id", "campaign_code", "product_name", "category", "price",
+        "description", "sizes", "colors", "fabric", "material", "fit",
+        "stock_status", "best_for", "upsell_product_ids",
+        "offer_name", "offer_price", "product_link",
+        "delivery_note", "exchange_note",
+    ]
+
+    for p in products:
+        lines = []
+        offer_name = p.get("offer_name", "").strip()
+        offer_price = p.get("offer_price", "").strip()
+
+        for key in field_order:
+            if key in ("offer_name", "offer_price"):
+                continue
+            val = p.get(key, "")
+            if not val:
+                continue
+            label = _LABELS.get(key, key.replace("_", " ").title())
+            if key == "price" or key == "offer_price":
+                val = _format_price(val)
+            lines.append(f"{label}: {val}")
+
+        if offer_name or offer_price:
+            offer_text = offer_name
+            if offer_price:
+                offer_text = f"{offer_name} at {_format_price(offer_price)}".strip(" -at")
+                if not offer_name:
+                    offer_text = _format_price(offer_price)
+            lines.append(f"Offer: {offer_text}")
+
+        # Re-insert any other unknown columns the brand might have added
+        for k, v in p.items():
+            if k in field_order or k in ("offer_name", "offer_price"):
+                continue
+            if v:
+                lines.append(f"{k.replace('_',' ').title()}: {v}")
+
+        product_blocks.append("\n".join(lines))
+
+    return "PRODUCT CATALOGUE TABLE:\n\n" + "\n\n---\n\n".join(product_blocks)
+
+
+def build_campaign_lookup(products):
+    """Compact campaign_code → product_id → name mapping."""
+    rows = []
+    for p in products:
+        code = p.get("campaign_code", "").strip()
+        if not code:
+            continue
+        pid = p.get("product_id", "").strip()
+        name = p.get("product_name", "").strip()
+        rows.append(f"- {code} → {pid} → {name}")
+    if not rows:
+        return ""
+    return "CAMPAIGN / AD PRODUCT MAPPING:\n" + "\n".join(rows)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SYSTEM PROMPT
+# ══════════════════════════════════════════════════════════════════════════════
+
 def get_system_prompt(brand):
-    return f"""Tu {brand["name"]} ka AI sales assistant hai. Tu ek experienced, friendly aur smart sales person ki tarah behave karta hai.
+    use_uploaded = bool(brand.get("use_uploaded_catalogue")) and bool(
+        brand.get("uploaded_product_context")
+    )
 
-BRAND INFO:
-- Brand Name: {brand["name"]}
-- Industry/Category: {brand["industry"]}
-- Brand Tone: {brand["tone"]}
-- Brand Description: {brand["description"]}
+    sections = [
+        f'Tu {brand["name"]} ka AI sales assistant hai. Tu ek experienced, '
+        f'friendly aur smart sales person ki tarah behave karta hai.',
+        "",
+        "BRAND INFO:",
+        f'- Brand Name: {brand["name"]}',
+        f'- Industry/Category: {brand["industry"]}',
+        f'- Brand Tone: {brand["tone"]}',
+        f'- Brand Description: {brand["description"]}',
+        "",
+    ]
 
-PRODUCTS:
-{brand["products"]}
+    if use_uploaded:
+        sections.append(brand["uploaded_product_context"])
+        sections.append("")
+        if brand.get("campaign_lookup"):
+            sections.append(brand["campaign_lookup"])
+            sections.append("")
+        if brand.get("products"):
+            sections.append("EXTRA PRODUCT NOTES (from manual list):")
+            sections.append(brand["products"])
+            sections.append("")
+    else:
+        sections.append("PRODUCTS:")
+        sections.append(brand.get("products", ""))
+        sections.append("")
 
-COMMON FAQs:
-{brand["faqs"]}
+    sections.extend([
+        "COMMON FAQs:",
+        brand.get("faqs", "No specific FAQs provided"),
+        "",
+        "SPECIAL INSTRUCTIONS:",
+        brand.get("instructions", "None"),
+        "",
+    ])
 
-SPECIAL INSTRUCTIONS:
-{brand["instructions"]}
+    if use_uploaded:
+        sections.append(
+            "RULES FOR PRODUCT TABLE:\n"
+            "- The uploaded product catalogue is the primary product source.\n"
+            "- If a customer mentions a campaign_code (e.g. SHIRT001), product_id "
+            "(e.g. P001), or a product name, first answer about that exact product.\n"
+            "- Do not randomly show all products if the user came for one product.\n"
+            "- First continue the ad/product conversation naturally.\n"
+            "- Ask size/color/use-case questions if needed.\n"
+            "- Only after the customer shows interest, suggest upsell_product_ids "
+            "or the offer if available.\n"
+            "- Use product_link when the customer wants to buy.\n"
+            "- Do not invent product names, prices, sizes, colors, stock, offers, or links.\n"
+            "- If something is not in the table, clearly say it is not listed in the catalogue.\n"
+            "- Reply naturally in Hinglish like a WhatsApp sales advisor.\n"
+            "- Keep replies short and helpful.\n"
+        )
 
-TUMHARE RULES:
+    sections.append(
+        "TUMHARE GENERAL RULES:\n\n"
+        "1. LANGUAGE: Hinglish mein baat karo — natural, friendly, jaise ek dost "
+        "baat karta hai. Robotic mat bano.\n\n"
+        f'2. DOMAIN EXPERT: Tu sirf brand products nahi jaanta — {brand["industry"]} '
+        "ke baare mein genuinely knowledgeable hai. Agar customer koi related question "
+        "pooche, genuinely help karo. Phir naturally brand product suggest karo.\n\n"
+        "3. SALES PSYCHOLOGY:\n"
+        "   - Customer interested lage toh gently close karo\n"
+        "   - Hesitant lage toh objection handle karo\n"
+        "   - Always value pehle, price baad mein\n"
+        "   - Upsell naturally karo — \"is ke saath ye bhi accha rahega\"\n\n"
+        "4. CONVERSATION MEMORY: Poori conversation ka context yaad rakho.\n\n"
+        "5. NEVER:\n"
+        "   - Robotic ya scripted mat lago\n"
+        "   - \"Main sirf ek AI hoon\" mat bolo\n"
+        "   - Brand ke baare mein galat info mat do\n"
+        "   - Aggressive sales mat karo\n\n"
+        "6. ALWAYS:\n"
+        "   - Warm aur helpful raho\n"
+        "   - Honest raho — agar product available nahi hai toh clearly bolo\n"
+        "   - Customer ki problem pehle samjho, phir solution do\n\n"
+        "Yaad rakho — tera goal hai customer ki genuinely help karna. "
+        "Sale naturally aayegi."
+    )
 
-1. LANGUAGE: Hinglish mein baat karo — natural, friendly, jaise ek dost baat karta hai. Robotic mat bano.
-
-2. DOMAIN EXPERT: Tu sirf brand products nahi jaanta — {brand["industry"]} ke baare mein genuinely knowledgeable hai. Agar customer koi related question pooche — skin problem, outfit advice, nutrition, etc. — genuinely help karo. Phir naturally brand product suggest karo.
-
-3. SALES PSYCHOLOGY:
-   - Customer interested lage toh gently close karo
-   - Hesitant lage toh objection handle karo
-   - Always value pehle, price baad mein
-   - Upsell naturally karo — "is ke saath ye bhi accha rahega"
-
-4. CONVERSATION MEMORY: Poori conversation ka context yaad rakho. Agar customer ne pehle kuch bataya hai — use use karo.
-
-5. NEVER:
-   - Robotic ya scripted mat lago
-   - "Main sirf ek AI hoon" mat bolo
-   - Brand ke baare mein galat info mat do
-   - Aggressive sales mat karo
-
-6. ALWAYS:
-   - Warm aur helpful raho
-   - Honest raho — agar product available nahi hai toh clearly bolo
-   - Customer ki problem pehle samjho, phir solution do
-
-Yaad rakho — tera goal hai customer ki genuinely help karna. Sale naturally aayegi."""
+    return "\n".join(sections)
 
 
 def chat_with_brand(user_message, brand_config, chat_history):
@@ -362,40 +654,115 @@ if not st.session_state.setup_done:
     </div>
     """, unsafe_allow_html=True)
 
+    # ── Catalogue upload (OUTSIDE the form so it parses immediately) ──────────
+    st.markdown('<div class="section-label">Upload Product Catalogue</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="helper-text">Recommended columns: '
+        '<code>product_id, campaign_code, product_name, price, sizes, colors, '
+        'stock_status, upsell_product_ids, product_link</code></div>',
+        unsafe_allow_html=True,
+    )
+
+    uploaded = st.file_uploader(
+        "Upload CSV or Excel",
+        type=["csv", "xlsx"],
+        help="Required columns: product_id, product_name, price",
+        key="catalogue_uploader",
+    )
+
+    if uploaded is not None:
+        products, detected, err = parse_product_file(uploaded)
+        if err:
+            st.error(err)
+            if detected:
+                st.caption(f"Detected columns: {', '.join(detected)}")
+            st.session_state.parsed_catalogue = None
+        else:
+            ctx = format_product_catalogue_for_prompt(products)
+            campaigns = build_campaign_lookup(products)
+            st.session_state.parsed_catalogue = {
+                "products": products,
+                "columns": detected,
+                "context": ctx,
+                "campaigns": campaigns,
+            }
+            campaign_count = sum(
+                1 for p in products if p.get("campaign_code", "").strip()
+            )
+            st.markdown(
+                f'<div class="upload-summary">'
+                f'<p><strong>{len(products)}</strong> products detected · '
+                f'<strong>{campaign_count}</strong> with campaign codes</p>'
+                f'<p>Detected columns: {", ".join(detected)}</p>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+            st.dataframe(
+                pd.DataFrame(products).head(5),
+                use_container_width=True,
+                hide_index=True,
+            )
+
+    with st.expander("📄 See sample CSV template"):
+        st.code(
+            "product_id,campaign_code,product_name,category,price,description,"
+            "sizes,colors,fabric,fit,stock_status,best_for,upsell_product_ids,"
+            "offer_name,offer_price,product_link\n"
+            "P001,SHIRT001,Cotton Casual Shirt,Shirt,799,"
+            "Regular fit cotton shirt for office and casual wear,"
+            "\"M,L,XL\",\"White,Sky Blue,Navy\",Cotton,Regular,In stock,"
+            "\"office,casual,summer\",P002,Shirt + Jeans Combo,1699,"
+            "https://brand.com/products/cotton-shirt\n"
+            "P002,JEANS001,Slim Fit Jeans,Jeans,999,"
+            "Stretch denim slim fit jeans,\"30,32,34\",\"Blue,Black\","
+            "Denim,Slim Fit,In stock,\"casual,party,smart casual\",P001,"
+            "Shirt + Jeans Combo,1699,"
+            "https://brand.com/products/slim-fit-jeans",
+            language="csv",
+        )
+
+    use_uploaded_default = st.session_state.parsed_catalogue is not None
+    use_uploaded_toggle = st.checkbox(
+        "Use uploaded catalogue as primary product data",
+        value=use_uploaded_default,
+        disabled=not use_uploaded_default,
+    )
+
+    st.markdown("---")
+
     with st.form("brand_setup"):
         col1, col2 = st.columns(2, gap="large")
 
         with col1:
             # Brand Identity
             st.markdown('<div class="section-label">Brand Identity</div>', unsafe_allow_html=True)
-            with st.container():
-                brand_name = st.text_input(
-                    "Brand Name *",
-                    placeholder="e.g. The Outfit Room",
-                )
-                industry = st.selectbox(
-                    "Industry *",
-                    [
-                        "Clothing & Fashion",
-                        "Skincare & Beauty",
-                        "Food & Nutrition",
-                        "Electronics",
-                        "Home & Decor",
-                        "Fitness & Health",
-                        "Jewellery",
-                        "Other",
-                    ],
-                )
-                tone = st.selectbox(
-                    "Brand Tone *",
-                    [
-                        "Friendly & Casual (Hinglish)",
-                        "Professional & Formal",
-                        "Youthful & Trendy",
-                        "Luxury & Premium",
-                        "Warm & Personal",
-                    ],
-                )
+            brand_name = st.text_input(
+                "Brand Name *",
+                placeholder="e.g. The Outfit Room",
+            )
+            industry = st.selectbox(
+                "Industry *",
+                [
+                    "Clothing & Fashion",
+                    "Skincare & Beauty",
+                    "Food & Nutrition",
+                    "Electronics",
+                    "Home & Decor",
+                    "Fitness & Health",
+                    "Jewellery",
+                    "Other",
+                ],
+            )
+            tone = st.selectbox(
+                "Brand Tone *",
+                [
+                    "Friendly & Casual (Hinglish)",
+                    "Professional & Formal",
+                    "Youthful & Trendy",
+                    "Luxury & Premium",
+                    "Warm & Personal",
+                ],
+            )
 
             # Brand description
             st.markdown('<div class="section-label">Brand Story</div>', unsafe_allow_html=True)
@@ -406,12 +773,14 @@ if not st.session_state.setup_done:
             )
 
         with col2:
-            # Products
+            # Manual Products
             st.markdown('<div class="section-label">Products & Offers</div>', unsafe_allow_html=True)
             products = st.text_area(
-                "Products List *",
+                "Products List (manual)",
                 placeholder="1. Flying Machine Slim Fit Jeans — ₹1299 — Sizes: 28–36\n2. Premium Oxford Shirt — ₹899 — Colors: White, Blue, Black\n3. Casual Hoodie — ₹799 — Sizes: S, M, L, XL",
                 height=140,
+                help="Manual product list. If a catalogue is uploaded above, "
+                     "this is used as extra notes alongside the catalogue.",
             )
 
             # FAQs
@@ -436,17 +805,31 @@ if not st.session_state.setup_done:
         )
 
         if submitted:
-            if not brand_name or not description or not products:
-                st.error("Brand name, description, and products are required to launch.")
+            cat = st.session_state.parsed_catalogue
+            has_catalogue = cat is not None and len(cat.get("products", [])) > 0
+            use_uploaded = bool(use_uploaded_toggle and has_catalogue)
+
+            # Required: brand basics, plus EITHER manual products OR uploaded catalogue
+            if not brand_name or not description:
+                st.error("Brand name and description are required to launch.")
+            elif not products and not has_catalogue:
+                st.error(
+                    "Please add a manual products list OR upload a product catalogue."
+                )
             else:
                 brand_cfg = {
                     "name": brand_name,
                     "industry": industry,
                     "tone": tone,
                     "description": description,
-                    "products": products,
+                    "products": products or "",
                     "faqs": faqs if faqs else "No specific FAQs provided",
                     "instructions": instructions if instructions else "None",
+                    "uploaded_products":         cat["products"]  if has_catalogue else [],
+                    "uploaded_product_columns":  cat["columns"]   if has_catalogue else [],
+                    "uploaded_product_context":  cat["context"]   if has_catalogue else "",
+                    "campaign_lookup":           cat["campaigns"] if has_catalogue else "",
+                    "use_uploaded_catalogue":    use_uploaded,
                 }
                 st.session_state.brand_config = brand_cfg
                 st.session_state.setup_done = True
@@ -467,6 +850,17 @@ if not st.session_state.setup_done:
 else:
     brand = st.session_state.brand_config
 
+    # Catalogue stats
+    uploaded_products = brand.get("uploaded_products", []) or []
+    has_catalogue = len(uploaded_products) > 0
+    campaign_count = sum(
+        1 for p in uploaded_products if p.get("campaign_code", "").strip()
+    )
+    use_uploaded = bool(brand.get("use_uploaded_catalogue")) and has_catalogue
+    active_source = (
+        "Uploaded catalogue" if use_uploaded else "Manual products"
+    )
+
     # ── Sidebar ───────────────────────────────────────────────────────────────
     with st.sidebar:
         st.markdown('<div class="sidebar-logo">◈ Halo</div>', unsafe_allow_html=True)
@@ -480,6 +874,28 @@ else:
             <p><strong>{brand["name"]}</strong></p>
             <p>{brand["industry"]}</p>
             <p style="color:#6d28d9;font-size:0.75rem;margin-top:4px;">{brand["tone"]}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        st.markdown('<div class="section-label">Catalogue</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="sidebar-stat">
+            <span class="stat-label">Uploaded</span>
+            <span class="stat-value">{"Yes" if has_catalogue else "No"}</span>
+        </div>
+        <div class="sidebar-stat">
+            <span class="stat-label">Products</span>
+            <span class="stat-value">{len(uploaded_products)}</span>
+        </div>
+        <div class="sidebar-stat">
+            <span class="stat-label">Campaign codes</span>
+            <span class="stat-value">{campaign_count}</span>
+        </div>
+        <div class="sidebar-stat">
+            <span class="stat-label">Active source</span>
+            <span class="stat-value">{active_source}</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -503,6 +919,7 @@ else:
             st.session_state.setup_done = False
             st.session_state.messages = []
             st.session_state.brand_config = None
+            st.session_state.parsed_catalogue = None
             st.rerun()
 
         st.markdown("---")
@@ -510,10 +927,10 @@ else:
         st.markdown('<div class="section-label">Quick Test Prompts</div>', unsafe_allow_html=True)
         test_prompts = [
             "Products dikhao",
-            "Price kya hai?",
+            "Hi I am interested in SHIRT001",
+            "What sizes are available?",
+            "Suggest outfit under 2000",
             "Delivery kitne din?",
-            "Return policy?",
-            "Kaunsa best hai?",
         ]
         for tp in test_prompts:
             if st.button(tp, use_container_width=True, key=tp):
@@ -530,7 +947,7 @@ else:
     <div class="chat-header">
         <div class="chat-header-left">
             <h2>◈ {brand["name"]}</h2>
-            <p>{brand["industry"]} &nbsp;·&nbsp; {brand["tone"]}</p>
+            <p>{brand["industry"]} &nbsp;·&nbsp; {brand["tone"]} &nbsp;·&nbsp; {active_source}</p>
         </div>
         <div class="status-pill">
             <span class="status-dot"></span> Live Assistant

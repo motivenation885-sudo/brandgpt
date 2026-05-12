@@ -1,0 +1,237 @@
+This is Halo WhatsApp bot.
+
+Current files:
+- app.py = Streamlit UI + brand setup + chat
+- webhook.py = Tornado WhatsApp webhook, reads active_brand.json
+- serve.py = starts Streamlit + webhook
+
+TASK:
+Add product table / CSV / Excel upload support, parse the uploaded file, convert it into clean product context, save it inside active_brand.json, and make the AI reply from that parsed product table context.
+
+This is a focused MVP upgrade.
+Do not overbuild.
+
+STRICT RULES:
+1. Change ONLY app.py unless absolutely necessary.
+2. Do NOT change webhook.py in this step.
+3. Do NOT change serve.py.
+4. Do NOT add product_db.py, offer_db.py, sales_engine.py, database, auth, login, RAG, or new backend architecture.
+5. Do NOT break existing manual product text input.
+6. Keep active_brand.json saving exactly working.
+7. Keep Groq chat logic working.
+8. Keep current premium UI style.
+9. Do not make the bot deterministic/robotic.
+10. The AI should still reply naturally, but with better structured product context.
+11. Do not pass raw unreadable CSV/Excel data directly to the model. Parse it into clean text first.
+
+GOAL:
+Brands should be able to upload a CSV or Excel product catalogue. Halo should parse the table, understand the columns, convert rows into clean product descriptions, and include that structured product context in the system prompt.
+
+Later, Meta/Instagram ads can use campaign_code like SHIRT001. When user messages “Hi I am interested in SHIRT001”, Halo should understand which exact product the user came for and reply about that product first.
+
+SUPPORTED FILE TYPES:
+- .csv
+- .xlsx
+
+REQUIRED PRODUCT TABLE COLUMNS:
+The upload should support these columns if present:
+
+required:
+- product_id
+- product_name
+- price
+
+optional:
+- campaign_code
+- category
+- description
+- sizes
+- colors
+- material
+- fabric
+- fit
+- stock_status
+- best_for
+- upsell_product_ids
+- offer_name
+- offer_price
+- product_link
+- delivery_note
+- exchange_note
+
+IMPORTANT:
+Do not fail if optional columns are missing.
+If required columns are missing, show a clear UI error:
+“Product sheet must include product_id, product_name, and price.”
+
+UI CHANGES IN SETUP PAGE:
+1. Keep manual Products List textarea.
+2. Add a new section called:
+   “Upload Product Catalogue”
+3. Add file uploader:
+   “Upload CSV or Excel”
+4. Add helper text:
+   “Recommended columns: product_id, campaign_code, product_name, price, sizes, colors, stock_status, upsell_product_ids, product_link”
+5. Add a small sample table preview after upload.
+6. Show:
+   - number of products detected
+   - detected columns
+   - any missing required columns
+7. Add a toggle/checkbox:
+   “Use uploaded catalogue as primary product data”
+   Default: true if file is uploaded.
+8. If both manual products and uploaded catalogue are provided:
+   - include both in brand config
+   - uploaded catalogue should be treated as primary product data
+   - manual product text should be treated as extra notes
+
+DATA PARSING:
+In app.py, create helper functions:
+
+parse_product_file(uploaded_file) -> tuple[list[dict], list[str], str | None]
+
+It should:
+- detect CSV vs Excel by file extension/name
+- use pandas to read CSV/Excel
+- normalize column names:
+  lowercase, strip spaces, replace spaces with underscores
+- validate required columns
+- return product rows as list of dicts
+- return detected columns
+- return error message if any
+
+format_product_catalogue_for_prompt(products: list[dict]) -> str
+
+It should convert products into clean readable text for the AI.
+
+Example output:
+
+PRODUCT CATALOGUE TABLE:
+Product ID: P001
+Campaign Code: SHIRT001
+Name: Cotton Casual Shirt
+Category: Shirt
+Price: ₹799
+Description: Regular fit cotton shirt for office and casual wear
+Sizes: M, L, XL
+Colors: White, Sky Blue, Navy
+Fabric/Material: Cotton
+Fit: Regular
+Stock: In stock
+Best For: office, casual, summer
+Upsell Product IDs: P002
+Offer: Shirt + Jeans Combo at ₹1699
+Product Link: https://brand.com/products/cotton-shirt
+
+---
+
+Also create:
+
+build_campaign_lookup(products: list[dict]) -> str
+
+It should create compact mapping:
+
+CAMPAIGN / AD PRODUCT MAPPING:
+- SHIRT001 → P001 → Cotton Casual Shirt
+- JEANS001 → P002 → Slim Fit Jeans
+
+If campaign_code is missing, skip that product in campaign mapping.
+
+SAVE TO active_brand.json:
+When setup is submitted, brand_cfg must include:
+
+{
+  "name": ...,
+  "industry": ...,
+  "tone": ...,
+  "description": ...,
+  "products": manual products text,
+  "faqs": ...,
+  "instructions": ...,
+  "uploaded_products": list of product dicts,
+  "uploaded_product_columns": list of detected columns,
+  "uploaded_product_context": formatted product catalogue text,
+  "campaign_lookup": formatted campaign mapping text,
+  "use_uploaded_catalogue": true/false
+}
+
+SYSTEM PROMPT UPDATE:
+Modify get_system_prompt(brand) so it includes:
+
+1. Brand basics
+2. Uploaded product catalogue context if available and use_uploaded_catalogue=true
+3. Campaign/ad mapping if available
+4. Manual product text as extra notes
+5. FAQs
+6. Instructions
+
+The prompt must tell the AI:
+
+RULES FOR PRODUCT TABLE:
+- The uploaded product catalogue is the primary product source.
+- If a customer mentions a campaign_code like SHIRT001, product_id like P001, or a product name, first answer about that exact product.
+- Do not randomly show all products if the user came for one product.
+- First continue the ad/product conversation.
+- Ask size/color/use-case questions if needed.
+- Only after customer shows interest, suggest upsell_product_ids or offer if available.
+- Use product_link when customer wants to buy.
+- Do not invent product names, prices, sizes, colors, stock, offers, or links.
+- If something is not in the table, say it is not listed in the catalogue.
+- Reply naturally in Hinglish like a WhatsApp sales advisor.
+- Keep replies short and helpful.
+
+AD LEAD BEHAVIOR:
+If user says:
+“Hi I am interested in SHIRT001”
+or
+“Tell me about P001”
+or
+“More details about Cotton Casual Shirt”
+
+AI should reply about that exact product first:
+- product name
+- price
+- sizes/colors/fit/fabric if available
+- ask size/color preference
+
+Then later, if user confirms interest or asks price/offer/combo, AI can mention relevant upsell/offer from the table.
+
+DO NOT:
+- Do not hardcode clothing products in code.
+- Do not create skincare-specific logic.
+- Do not make exact if-user-says-this hardcoded replies.
+- Do not make the response robotic.
+- Do not add backend database.
+- Do not touch webhook.py.
+
+CHAT PAGE:
+In sidebar or brand info panel, show:
+- Uploaded catalogue: yes/no
+- product count
+- campaign codes count
+- active product source: uploaded catalogue / manual products
+
+TEST DATA:
+After implementation, include a small sample CSV template shown in UI or as markdown:
+
+product_id,campaign_code,product_name,category,price,description,sizes,colors,fabric,fit,stock_status,best_for,upsell_product_ids,offer_name,offer_price,product_link
+P001,SHIRT001,Cotton Casual Shirt,Shirt,799,Regular fit cotton shirt for office and casual wear,"M,L,XL","White,Sky Blue,Navy",Cotton,Regular,In stock,"office,casual,summer",P002,Shirt + Jeans Combo,1699,https://brand.com/products/cotton-shirt
+P002,JEANS001,Slim Fit Jeans,Jeans,999,Stretch denim slim fit jeans,"30,32,34","Blue,Black",Denim,Slim Fit,In stock,"casual,party,smart casual",P001,Shirt + Jeans Combo,1699,https://brand.com/products/slim-fit-jeans
+
+FINAL CHECKS:
+After changes, run the app and confirm:
+1. App loads.
+2. Brand setup still works without file upload.
+3. Brand setup works with CSV upload.
+4. Brand setup works with Excel upload if pandas/openpyxl available.
+5. active_brand.json contains uploaded_products and uploaded_product_context.
+6. Chat can answer:
+   - “Hi I am interested in SHIRT001”
+   - “What sizes are available?”
+   - “Do you have black jeans?”
+   - “Suggest outfit under 2000”
+7. webhook.py remains unchanged.
+8. serve.py remains unchanged.
+
+Print exact files changed.
+Confirm only app.py changed.
