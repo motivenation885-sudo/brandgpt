@@ -1,0 +1,225 @@
+This is Halo WhatsApp bot.
+
+TASK:
+Redesign ONLY the homepage/landing section in app.py with a stronger brand color identity.
+
+STRICT RULES:
+1. Change ONLY app.py.
+2. Do not touch webhook.py.
+3. Do not touch serve.py.
+4. Do not change AI logic.
+5. Do not change Groq calls.
+6. Do not change CSV/Excel parsing logic.
+7. Do not change profile logic.
+8. Do not change active_brand.json structure.
+9. Do not change chat/brand board page yet.
+10. Only improve homepage visual design, branding, layout, spacing, typography, colors, and copy.
+
+CURRENT PROBLEM:
+The homepage looks clean but generic. The purple/white palette is too common and does not create a memorable Halo brand signal.
+
+NEW BRAND COLOR SYSTEM:
+Use a signature Halo palette:
+
+Primary Halo Signal: #00D084
+Deep Navy: #071A2C
+Soft Mint: #E9FFF5
+Soft Surface: #F7FAF8
+Ink Text: #0F172A
+Muted Text: #64748B
+Accent Blue: #3B82F6
+Border: #D8EFE5
+
+Color direction:
+- Not generic purple.
+- Not plain white.
+- Not full dark.
+- Use soft mint gradients, deep navy text, and bright Halo green/mint highlights.
+- The #00D084 color should become the recognizable Halo signal.
+- Use it in logo mark, CTA buttons, badges, step numbers, highlights, and active states.
+- Keep page premium, not childish.
+
+DESIGN MOOD:
+Premium AI-commerce SaaS.
+Feels like:
+- clean product dashboard
+- WhatsApp commerce assistant
+- modern startup
+- conversion-focused
+- designed, not AI-generated
+
+REMOVE/AVOID:
+- Emoji icons on homepage
+- Generic purple cards
+- Plain white empty sections
+- Cheap neon overload
+- Cluttered workflow
+- “AI-generated landing page” look
+
+HOMEPAGE STRUCTURE:
+
+1. Top Brand Bar
+Create a strong visible brand identity.
+
+Left:
+- Custom CSS Halo logo mark:
+  circular/ring/orb style using #00D084 and Deep Navy
+- Text: “Halo”
+- Subtext: “AI WhatsApp Sales Assistant”
+
+Right:
+- Premium pill badges:
+  “Catalogue-aware”
+  “Ad-lead ready”
+  “WhatsApp-first”
+
+Use no emoji.
+
+2. Hero Section
+Two-column layout on desktop, stacked on mobile.
+
+Left:
+Eyebrow:
+“Built for D2C brands running WhatsApp sales”
+
+Headline:
+“Turn ad clicks into guided WhatsApp sales.”
+
+Subheadline:
+“Upload your catalogue, offers, FAQs, and policies. Halo answers product questions, qualifies buyers, and guides customers from ad interest to checkout.”
+
+CTA:
+Primary button:
+“Create assistant”
+
+Secondary button:
+“Load saved profile”
+
+Micro trust line:
+“Understands product IDs, campaign codes, sizes, colors, prices, offers, and links.”
+
+Right:
+Premium demo card:
+- Title: “Ad lead captured”
+- Mini status: “Answered from catalogue”
+- Customer bubble:
+  “Hi, I’m interested in SHIRT001”
+- Halo bubble:
+  “Cotton Casual Shirt — ₹799. Available in M/L/XL and White, Sky Blue, Navy.”
+- Mini product row:
+  Size • Color • Price • Link
+
+Make this card visually rich using soft mint background, deep navy text, and Halo Signal accents.
+
+3. Value Cards
+Replace emoji cards with designed feature cards.
+
+Use 4 cards:
+
+A. Product answers from catalogue
+“Answer price, size, color, stock, delivery, exchange, and product link questions from uploaded product data.”
+
+B. Campaign-code aware
+“When leads arrive from SHIRT001 or JEANS001, Halo starts with that exact product instead of generic replies.”
+
+C. Guided selling
+“Ask the right follow-up: size, color, budget, use-case, or checkout intent.”
+
+D. Smart upsell support
+“Suggest matching products, combos, and offers only when they exist in brand data.”
+
+Use custom CSS icon marks:
+- small square grid
+- target rings
+- arrow/path
+- stacked plus
+No emoji.
+
+4. Workflow Section
+Make workflow premium and spacious.
+
+Layout:
+4 separate step cards on desktop, stacked on mobile.
+
+Step 01: Upload catalogue
+Step 02: Train Halo
+Step 03: Connect WhatsApp
+Step 04: Convert leads
+
+Each step:
+- Step number in Halo Signal green circle
+- Title
+- One-line description
+- subtle connecting line on desktop
+- proper gaps
+
+Do not use cramped arrows.
+
+5. Who It’s For Section
+Title:
+“Built for brands where customers ask before buying.”
+
+Pills:
+- Fashion & Apparel
+- Skincare & Beauty
+- Accessories & Jewellery
+- Home & Decor
+- Food & Nutrition
+- Fitness & Lifestyle
+
+Make pills clean with mint border/accent, no emojis.
+
+6. Setup Form Transition
+Before existing setup form:
+Title:
+“Create your Halo assistant”
+
+Subtext:
+“Start with brand basics, upload your product sheet, and test conversations instantly.”
+
+Make this transition look premium and clear.
+
+STYLE REQUIREMENTS:
+- Use max-width around 1120px.
+- Mobile layout must look polished.
+- No horizontal overflow.
+- Better spacing.
+- More breathing room.
+- Cards must have soft shadows and borders.
+- Use Halo Signal green selectively, not everywhere.
+- Text must be readable.
+- Buttons must feel premium.
+- Homepage should look memorable because of the #00D084 Halo Signal color.
+
+CSS CLASSES TO USE OR UPDATE:
+- .halo-topbar
+- .halo-logo-mark
+- .hero-shell
+- .hero-copy
+- .hero-demo-card
+- .feature-grid
+- .feature-card
+- .feature-icon
+- .workflow-grid
+- .workflow-step
+- .audience-pills
+- .section-kicker
+- .section-title
+- .halo-primary-button
+- .halo-secondary-button
+
+IMPORTANT:
+Only update homepage/landing/setup visual sections.
+Do not modify chat page / brand board page yet.
+Do not modify app functionality.
+Do not change data parsing or prompts.
+Do not change webhook.
+
+After changes:
+- Print exact files changed.
+- Confirm only app.py changed.
+- Confirm no webhook.py changes.
+- Confirm no serve.py changes.
+- Confirm setup form still works.
+- Confirm saved profiles still work.
+- Confirm CSV upload still works.

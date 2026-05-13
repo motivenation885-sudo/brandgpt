@@ -22,14 +22,14 @@ st.markdown("""
 /* ─── Global reset & base ─── */
 html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"],
 [data-testid="stMain"], .main, .block-container {
-    background: #F4F2ED !important;
+    background: #F7FAF8 !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    color: #1F2937 !important;
+    color: #0F172A !important;
 }
 [data-testid="stMain"] {
-    background: radial-gradient(ellipse 80% 60% at 60% -10%, rgba(79,70,229,0.07) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 0% 80%, rgba(124,58,237,0.05) 0%, transparent 55%),
-                #F4F2ED !important;
+    background: radial-gradient(ellipse 90% 50% at 70% -5%, rgba(0,208,132,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 40% at 0% 90%, rgba(7,26,44,0.04) 0%, transparent 60%),
+                #F7FAF8 !important;
 }
 
 /* ─── Hide default Streamlit chrome ─── */
@@ -133,19 +133,19 @@ label, [data-testid="stWidgetLabel"] p {
 
 /* ─── Form submit button ─── */
 [data-testid="stFormSubmitButton"] > button {
-    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%) !important;
+    background: linear-gradient(135deg, #00D084 0%, #00B874 100%) !important;
     border: none !important;
-    color: #ffffff !important;
+    color: #071A2C !important;
     border-radius: 12px !important;
     font-size: 1rem !important;
     font-weight: 700 !important;
     padding: 0.75rem 2rem !important;
     letter-spacing: 0.02em !important;
-    box-shadow: 0 4px 20px rgba(79,70,229,0.3) !important;
+    box-shadow: 0 4px 20px rgba(0,208,132,0.3) !important;
     transition: all 0.2s ease !important;
 }
 [data-testid="stFormSubmitButton"] > button:hover {
-    box-shadow: 0 6px 28px rgba(79,70,229,0.45) !important;
+    box-shadow: 0 6px 28px rgba(0,208,132,0.45) !important;
     transform: translateY(-1px) !important;
 }
 
@@ -243,14 +243,14 @@ hr { border-color: #F3F4F6 !important; }
     outline: none !important;
 }
 [data-testid="stChatInput"] button {
-    background: linear-gradient(135deg, #4F46E5, #7C3AED) !important;
+    background: linear-gradient(135deg, #00D084, #00B874) !important;
     border-radius: 50% !important;
     border: none !important;
     margin: 6px !important;
-    box-shadow: 0 2px 8px rgba(79,70,229,0.3) !important;
+    box-shadow: 0 2px 8px rgba(0,208,132,0.35) !important;
 }
 [data-testid="stChatInput"] button:hover {
-    box-shadow: 0 4px 12px rgba(79,70,229,0.45) !important;
+    box-shadow: 0 4px 14px rgba(0,208,132,0.5) !important;
 }
 [data-testid="stChatInput"] button svg { fill: #ffffff !important; }
 
@@ -269,79 +269,437 @@ hr { border-color: #F3F4F6 !important; }
 }
 
 /* ─── Custom component classes ─── */
-.halo-hero {
-    background: linear-gradient(135deg, #ffffff 0%, #F5F3FF 100%);
-    border: 1px solid #E5E7EB;
-    border-radius: 22px;
-    padding: 48px 44px;
-    margin-bottom: 32px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 24px rgba(79,70,229,0.08);
-}
-.halo-hero::before {
-    content: "";
-    position: absolute;
-    top: -80px; right: -80px;
-    width: 280px; height: 280px;
-    background: radial-gradient(circle, rgba(79,70,229,0.1) 0%, transparent 65%);
-    border-radius: 50%;
-    pointer-events: none;
-}
-.halo-hero::after {
-    content: "";
-    position: absolute;
-    bottom: -60px; left: 20%;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 65%);
-    border-radius: 50%;
-    pointer-events: none;
-}
-.halo-badge {
-    display: inline-block;
-    background: #EEF2FF;
-    border: 1px solid #C7D2FE;
-    color: #4F46E5;
-    font-size: 0.72rem;
+
+/* ── Shared utilities ── */
+.section-kicker {
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 4px 14px;
-    border-radius: 999px;
-    margin-bottom: 20px;
+    color: #00D084;
+    margin: 0 0 8px 0;
 }
-.halo-hero h1 {
-    font-size: 2.4rem;
+.section-title {
+    font-size: 1.45rem;
     font-weight: 800;
-    color: #111827;
-    margin: 0 0 12px 0;
-    line-height: 1.15;
+    color: #071A2C;
+    margin: 0 0 6px 0;
     letter-spacing: -0.02em;
-}
-.halo-hero p {
-    font-size: 1.05rem;
-    color: #6B7280;
-    margin: 0;
-    max-width: 560px;
+    line-height: 1.25;
 }
 .section-label {
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #4F46E5;
+    color: #00D084;
     margin-bottom: 4px;
     margin-top: 20px;
 }
 .helper-text {
     font-size: 0.78rem;
-    color: #9CA3AF;
+    color: #64748B;
     margin: 6px 0 10px 0;
     line-height: 1.5;
 }
+
+/* ── Top brand bar ── */
+.halo-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+.halo-logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.halo-logo-mark {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: conic-gradient(#00D084 0deg 220deg, #071A2C 220deg 360deg);
+    box-shadow: 0 0 0 3px rgba(0,208,132,0.2), 0 4px 16px rgba(0,208,132,0.25);
+    flex-shrink: 0;
+}
+.halo-logo-text { line-height: 1.15; }
+.halo-logo-name {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #071A2C;
+    letter-spacing: -0.03em;
+}
+.halo-logo-sub {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: #64748B;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.halo-topbar-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.halo-topbar-badge {
+    background: #E9FFF5;
+    border: 1px solid #D8EFE5;
+    color: #064E3B;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 5px 12px;
+    border-radius: 999px;
+}
+
+/* ── Hero shell ── */
+.hero-shell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+    margin-bottom: 36px;
+}
+@media (max-width: 700px) { .hero-shell { grid-template-columns: 1fr; } }
+.hero-copy {
+    padding: 8px 0;
+}
+.hero-eyebrow {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #00D084;
+    background: #E9FFF5;
+    border: 1px solid #D8EFE5;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+}
+.hero-copy h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #071A2C;
+    margin: 0 0 14px 0;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+}
+.hero-copy p {
+    font-size: 0.97rem;
+    color: #64748B;
+    margin: 0 0 24px 0;
+    line-height: 1.65;
+}
+.hero-cta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+.halo-primary-button {
+    display: inline-block;
+    background: #00D084;
+    color: #071A2C;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 11px 22px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,208,132,0.35);
+    transition: box-shadow 0.18s, transform 0.18s;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+}
+.halo-primary-button:hover {
+    box-shadow: 0 6px 22px rgba(0,208,132,0.5);
+    transform: translateY(-1px);
+}
+.halo-secondary-button {
+    display: inline-block;
+    background: #ffffff;
+    color: #071A2C;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1.5px solid #D8EFE5;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s;
+    text-decoration: none;
+}
+.halo-secondary-button:hover {
+    border-color: #00D084;
+    background: #E9FFF5;
+}
+.hero-trust {
+    font-size: 0.76rem;
+    color: #64748B;
+    line-height: 1.5;
+}
+.hero-trust strong { color: #071A2C; }
+
+/* ── Hero demo card ── */
+.hero-demo-card {
+    background: #071A2C;
+    border-radius: 20px;
+    padding: 22px 22px 18px 22px;
+    box-shadow: 0 8px 40px rgba(7,26,44,0.18);
+    position: relative;
+    overflow: hidden;
+}
+.hero-demo-card::before {
+    content: "";
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(0,208,132,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.demo-toprow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+.demo-title-txt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+}
+.demo-status-badge {
+    font-size: 0.67rem;
+    font-weight: 700;
+    background: rgba(0,208,132,0.15);
+    border: 1px solid rgba(0,208,132,0.3);
+    color: #00D084;
+    padding: 3px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+}
+.demo-msg-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 4px;
+}
+.demo-msg-label-customer { color: rgba(255,255,255,0.35); }
+.demo-msg-label-halo { color: #00D084; }
+.demo-bubble-wrap { margin-bottom: 14px; }
+.demo-msg-customer {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px 12px 12px 4px;
+    padding: 10px 14px;
+    font-size: 0.87rem;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.5;
+    display: inline-block;
+    max-width: 90%;
+}
+.demo-msg-halo {
+    background: rgba(0,208,132,0.12);
+    border: 1px solid rgba(0,208,132,0.22);
+    border-radius: 12px 12px 4px 12px;
+    padding: 10px 14px;
+    font-size: 0.87rem;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.55;
+    display: inline-block;
+    max-width: 95%;
+}
+.demo-product-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+.demo-product-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+}
+
+/* ── Feature grid ── */
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 0 0 36px 0;
+}
+@media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+.feature-card {
+    background: #ffffff;
+    border: 1px solid #D8EFE5;
+    border-radius: 16px;
+    padding: 22px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    transition: box-shadow 0.18s, transform 0.18s;
+}
+.feature-card:hover {
+    box-shadow: 0 6px 22px rgba(0,208,132,0.1);
+    transform: translateY(-2px);
+}
+.feature-icon {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fi-catalogue {
+    background: #E9FFF5;
+    border: 1px solid #D8EFE5;
+}
+.fi-campaign { background: #EFF6FF; border: 1px solid #BFDBFE; }
+.fi-guided   { background: #FFF7ED; border: 1px solid #FED7AA; }
+.fi-upsell   { background: #F0FDF4; border: 1px solid #BBF7D0; }
+.fi-inner {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+}
+.fi-inner-catalogue { background: #00D084; }
+.fi-inner-campaign  { background: #3B82F6; }
+.fi-inner-guided    { background: #F97316; }
+.fi-inner-upsell    { background: #22C55E; }
+.feature-card h3 {
+    font-size: 0.93rem;
+    font-weight: 700;
+    color: #071A2C;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+}
+.feature-card p {
+    font-size: 0.82rem;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ── Workflow grid ── */
+.workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 0 0 36px 0;
+    position: relative;
+}
+@media (max-width: 680px) { .workflow-grid { grid-template-columns: 1fr 1fr; } }
+.workflow-step-card {
+    background: #ffffff;
+    border: 1px solid #D8EFE5;
+    border-radius: 16px;
+    padding: 20px 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    position: relative;
+}
+.workflow-step-num {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #071A2C;
+    border: 2px solid #00D084;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #00D084;
+    margin-bottom: 12px;
+    letter-spacing: 0.02em;
+}
+.workflow-step-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #071A2C;
+    margin: 0 0 4px 0;
+}
+.workflow-step-desc {
+    font-size: 0.77rem;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ── Audience pills ── */
+.audience-section {
+    background: #071A2C;
+    border-radius: 18px;
+    padding: 28px 28px 24px 28px;
+    margin: 0 0 32px 0;
+}
+.audience-section .section-kicker { color: rgba(0,208,132,0.7); }
+.audience-section .section-title { color: #ffffff; margin-bottom: 18px; }
+.audience-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.audience-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.75);
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 7px 18px;
+    border-radius: 999px;
+    transition: background 0.15s, border-color 0.15s;
+}
+.audience-pill:hover {
+    background: rgba(0,208,132,0.1);
+    border-color: rgba(0,208,132,0.3);
+    color: #fff;
+}
+
+/* ── Profiles section ── */
+.profiles-card {
+    background: #ffffff;
+    border: 1px solid #D8EFE5;
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin: 0 0 8px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.profiles-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #071A2C;
+    margin: 0 0 4px 0;
+}
+.profiles-card-sub {
+    font-size: 0.82rem;
+    color: #64748B;
+    margin: 0 0 18px 0;
+}
+
+/* ── Setup transition heading ── */
+.setup-heading { margin: 36px 0 4px 0; }
+.setup-heading h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #071A2C;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.02em;
+}
+.setup-heading p { font-size: 0.9rem; color: #64748B; margin: 0 0 20px 0; }
+
+/* ── Shared: profile/catalogue/upload ── */
 .profile-section {
     background: #ffffff;
-    border: 1px solid #E5E7EB;
+    border: 1px solid #D8EFE5;
     border-radius: 16px;
     padding: 20px 24px;
     margin-bottom: 24px;
@@ -352,53 +710,55 @@ hr { border-color: #F3F4F6 !important; }
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #4F46E5;
+    color: #00D084;
     margin: 0 0 14px 0;
 }
 .catalogue-loaded-notice {
-    background: #ECFDF5;
-    border: 1px solid #A7F3D0;
+    background: #E9FFF5;
+    border: 1px solid #D8EFE5;
     border-radius: 10px;
     padding: 10px 16px;
     margin: 10px 0 4px 0;
     font-size: 0.84rem;
-    color: #059669;
+    color: #065F46;
 }
 .upload-summary {
-    background: #F0FDF4;
-    border: 1px solid #BBF7D0;
+    background: #F0FDF9;
+    border: 1px solid #D8EFE5;
     border-radius: 12px;
     padding: 14px 18px;
     margin: 12px 0;
 }
 .upload-summary p { margin: 2px 0; font-size: 0.85rem; color: #374151; }
-.upload-summary strong { color: #059669; font-weight: 700; }
+.upload-summary strong { color: #00B874; font-weight: 700; }
+
+/* ── Chat page components ── */
 .chat-header {
     background: #ffffff;
-    border: 1px solid #E5E7EB;
+    border: 1px solid #D8EFE5;
     border-radius: 18px;
     padding: 20px 28px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
 .chat-header-left h2 {
     font-size: 1.35rem;
     font-weight: 800;
-    color: #111827;
+    color: #071A2C;
     margin: 0 0 4px 0;
     letter-spacing: -0.01em;
 }
-.chat-header-left p { font-size: 0.83rem; color: #6B7280; margin: 0; }
+.chat-header-left p { font-size: 0.83rem; color: #64748B; margin: 0; }
 .status-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #ECFDF5;
-    border: 1px solid #A7F3D0;
-    color: #059669;
+    background: #E9FFF5;
+    border: 1px solid #D8EFE5;
+    color: #065F46;
     font-size: 0.73rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -407,233 +767,40 @@ hr { border-color: #F3F4F6 !important; }
 }
 .status-dot {
     width: 7px; height: 7px;
-    background: #10B981;
+    background: #00D084;
     border-radius: 50%;
     display: inline-block;
-    box-shadow: 0 0 5px rgba(16,185,129,0.6);
+    box-shadow: 0 0 6px rgba(0,208,132,0.7);
     animation: pulse 2s infinite;
 }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-.sidebar-logo {
-    font-size: 1.35rem;
-    font-weight: 900;
-    color: #4F46E5;
-    letter-spacing: -0.03em;
-    margin-bottom: 2px;
-}
-.sidebar-tagline {
-    font-size: 0.68rem;
-    color: #9CA3AF;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 20px;
-}
-.sidebar-brand-card {
-    background: #F5F3FF;
-    border: 1px solid #E0E7FF;
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 8px;
-}
-.sidebar-brand-card p { margin: 0; font-size: 0.82rem; color: #6B7280; }
-.sidebar-brand-card strong { color: #111827; font-weight: 700; }
+
+/* ── Sidebar ── */
+.sidebar-logo { font-size: 1.35rem; font-weight: 900; color: #00D084; letter-spacing: -0.03em; margin-bottom: 2px; }
+.sidebar-tagline { font-size: 0.68rem; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; }
+.sidebar-brand-card { background: #E9FFF5; border: 1px solid #D8EFE5; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; }
+.sidebar-brand-card p { margin: 0; font-size: 0.82rem; color: #64748B; }
+.sidebar-brand-card strong { color: #071A2C; font-weight: 700; }
 .sidebar-stat {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #F9FAFB;
-    border: 1px solid #F3F4F6;
-    border-radius: 10px;
-    padding: 9px 14px;
-    margin-bottom: 6px;
-    font-size: 0.82rem;
+    display: flex; justify-content: space-between; align-items: center;
+    background: #F7FAF8; border: 1px solid #E9FFF5; border-radius: 10px;
+    padding: 9px 14px; margin-bottom: 6px; font-size: 0.82rem;
 }
 .stat-label { color: #9CA3AF; }
-.stat-value { color: #4F46E5; font-weight: 700; }
+.stat-value { color: #00D084; font-weight: 700; }
 
-/* ─── Homepage: value cards ─── */
-.value-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin: 28px 0 32px 0;
-}
-.value-card {
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
-    border-radius: 18px;
-    padding: 24px 22px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-    transition: box-shadow 0.2s;
-}
-.value-card:hover { box-shadow: 0 6px 24px rgba(79,70,229,0.1); }
-.value-card-icon {
-    font-size: 1.6rem;
-    margin-bottom: 10px;
-    display: block;
-}
-.value-card h3 {
-    font-size: 0.97rem;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 8px 0;
-    line-height: 1.3;
-}
-.value-card p {
-    font-size: 0.84rem;
-    color: #6B7280;
-    margin: 0;
-    line-height: 1.6;
-}
-
-/* ─── Homepage: workflow strip ─── */
-.workflow-strip {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
-    border-radius: 18px;
-    padding: 20px 28px;
-    margin: 0 0 32px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    flex-wrap: wrap;
-}
-.workflow-step {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 130px;
-}
-.workflow-step-num {
-    width: 28px; height: 28px;
-    background: linear-gradient(135deg, #4F46E5, #7C3AED);
-    border-radius: 50%;
-    color: #fff;
-    font-size: 0.72rem;
-    font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.workflow-step-text { font-size: 0.84rem; font-weight: 600; color: #374151; }
-.workflow-arrow { color: #D1D5DB; font-size: 1.2rem; margin: 0 8px; flex-shrink: 0; }
-
-/* ─── Homepage: demo card ─── */
-.demo-card {
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
-    border-radius: 20px;
-    padding: 24px 26px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-    margin: 0 0 32px 0;
-}
-.demo-card-title {
-    font-size: 0.72rem;
+/* ── Halo badge (legacy) ── */
+.halo-badge {
+    display: inline-block;
+    background: #E9FFF5;
+    border: 1px solid #D8EFE5;
+    color: #065F46;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #4F46E5;
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.demo-bubble {
-    border-radius: 14px;
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    font-size: 0.88rem;
-    line-height: 1.55;
-    max-width: 85%;
-}
-.demo-bubble-user {
-    background: #EEF2FF;
-    color: #3730A3;
-    border: 1px solid #C7D2FE;
-    margin-left: auto;
-    text-align: right;
-}
-.demo-bubble-halo {
-    background: #F9FAFB;
-    color: #374151;
-    border: 1px solid #E5E7EB;
-}
-.demo-bubble-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 3px;
-}
-.demo-bubble-label-user { color: #6366F1; text-align: right; }
-.demo-bubble-label-halo { color: #9CA3AF; }
-
-/* ─── Homepage: who-it's-for ─── */
-.for-section {
-    background: linear-gradient(135deg, #F5F3FF 0%, #EEF2FF 100%);
-    border: 1px solid #E0E7FF;
-    border-radius: 18px;
-    padding: 26px 28px;
-    margin: 0 0 32px 0;
-}
-.for-section h3 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #1F2937;
-    margin: 0 0 16px 0;
-}
-.for-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.for-pill {
-    background: #ffffff;
-    border: 1px solid #C7D2FE;
-    color: #4F46E5;
-    font-size: 0.82rem;
-    font-weight: 600;
-    padding: 6px 16px;
+    padding: 4px 12px;
     border-radius: 999px;
-}
-
-/* ─── Homepage: profiles card ─── */
-.profiles-card {
-    background: #ffffff;
-    border: 1px solid #E5E7EB;
-    border-radius: 18px;
-    padding: 22px 24px;
-    margin: 0 0 8px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-}
-.profiles-card-title {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 4px 0;
-}
-.profiles-card-sub {
-    font-size: 0.82rem;
-    color: #9CA3AF;
-    margin: 0 0 18px 0;
-}
-
-/* ─── Homepage: setup section heading ─── */
-.setup-heading {
-    margin: 36px 0 4px 0;
-}
-.setup-heading h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #111827;
-    margin: 0 0 6px 0;
-    letter-spacing: -0.02em;
-}
-.setup-heading p {
-    font-size: 0.9rem;
-    color: #6B7280;
-    margin: 0 0 20px 0;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -1024,95 +1191,136 @@ def _activate_profile(profile: dict):
 # ══════════════════════════════════════════════════════════════════════════════
 if not st.session_state.setup_done:
 
-    # ── Hero ──────────────────────────────────────────────────────────────────
+    # ── Top brand bar ─────────────────────────────────────────────────────────
     st.markdown("""
-    <div class="halo-hero">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
-            <span class="halo-badge">AI WhatsApp Sales Assistant</span>
-            <span class="halo-badge">Built for D2C brands</span>
-            <span class="halo-badge">Catalogue-aware replies</span>
+    <div class="halo-topbar">
+        <div class="halo-logo-wrap">
+            <div class="halo-logo-mark"></div>
+            <div class="halo-logo-text">
+                <div class="halo-logo-name">Halo</div>
+                <div class="halo-logo-sub">AI WhatsApp Sales Assistant</div>
+            </div>
         </div>
-        <h1>Halo turns WhatsApp chats<br>into sales conversations.</h1>
-        <p>Upload your products, offers, FAQs, and policies — Halo replies to customers on WhatsApp with accurate product details, recommendations, and purchase guidance.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ── Value cards ───────────────────────────────────────────────────────────
-    st.markdown("""
-    <div class="value-grid">
-        <div class="value-card">
-            <span class="value-card-icon">⚡</span>
-            <h3>Answer product questions instantly</h3>
-            <p>Handle price, size, color, stock, delivery, exchange, and product link questions directly from your catalogue.</p>
-        </div>
-        <div class="value-card">
-            <span class="value-card-icon">🎯</span>
-            <h3>Convert ad leads faster</h3>
-            <p>When customers arrive from Meta or Instagram ads via campaign codes like <strong>SHIRT001</strong>, Halo continues the chat around that exact product.</p>
-        </div>
-        <div class="value-card">
-            <span class="value-card-icon">🛍️</span>
-            <h3>Recommend and upsell naturally</h3>
-            <p>Suggest relevant combos, offers, and matching products — only from your uploaded brand data. No hallucinations.</p>
-        </div>
-        <div class="value-card">
-            <span class="value-card-icon">🧠</span>
-            <h3>Reduce manual WhatsApp workload</h3>
-            <p>Let Halo handle repetitive questions while your team focuses on hot buyers who are ready to close.</p>
+        <div class="halo-topbar-badges">
+            <span class="halo-topbar-badge">Catalogue-aware</span>
+            <span class="halo-topbar-badge">Ad-lead ready</span>
+            <span class="halo-topbar-badge">WhatsApp-first</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Workflow strip ────────────────────────────────────────────────────────
+    # ── Hero — two-column ─────────────────────────────────────────────────────
     st.markdown("""
-    <div class="workflow-strip">
-        <div class="workflow-step">
-            <div class="workflow-step-num">1</div>
-            <span class="workflow-step-text">Upload catalogue</span>
+    <div class="hero-shell">
+        <div class="hero-copy">
+            <span class="hero-eyebrow">Built for D2C brands running WhatsApp sales</span>
+            <h1>Turn ad clicks into guided WhatsApp sales.</h1>
+            <p>Upload your catalogue, offers, FAQs, and policies. Halo answers product questions, qualifies buyers, and guides customers from ad interest to checkout.</p>
+            <div class="hero-cta-row">
+                <span class="halo-primary-button">Create assistant</span>
+                <span class="halo-secondary-button">Load saved profile</span>
+            </div>
+            <div class="hero-trust">Understands <strong>product IDs, campaign codes, sizes, colors, prices, offers,</strong> and links.</div>
         </div>
-        <span class="workflow-arrow">→</span>
-        <div class="workflow-step">
-            <div class="workflow-step-num">2</div>
-            <span class="workflow-step-text">Train Halo</span>
-        </div>
-        <span class="workflow-arrow">→</span>
-        <div class="workflow-step">
-            <div class="workflow-step-num">3</div>
-            <span class="workflow-step-text">Connect WhatsApp</span>
-        </div>
-        <span class="workflow-arrow">→</span>
-        <div class="workflow-step">
-            <div class="workflow-step-num">4</div>
-            <span class="workflow-step-text">Convert leads</span>
+        <div class="hero-demo-card">
+            <div class="demo-toprow">
+                <span class="demo-title-txt">AD LEAD CAPTURED</span>
+                <span class="demo-status-badge">Answered from catalogue</span>
+            </div>
+            <div class="demo-bubble-wrap">
+                <div class="demo-msg-label demo-msg-label-customer">Customer</div>
+                <div class="demo-msg-customer">Hi, I&#39;m interested in SHIRT001</div>
+            </div>
+            <div class="demo-bubble-wrap">
+                <div class="demo-msg-label demo-msg-label-halo">Halo</div>
+                <div class="demo-msg-halo">Cotton Casual Shirt &#8212; &#8377;799. Available in M / L / XL and White, Sky Blue, Navy. Which size would you prefer?</div>
+            </div>
+            <div class="demo-product-row">
+                <span class="demo-product-chip">Size</span>
+                <span class="demo-product-chip">Color</span>
+                <span class="demo-product-chip">Price</span>
+                <span class="demo-product-chip">Product link</span>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Demo conversation card ─────────────────────────────────────────────────
+    # ── Feature cards ─────────────────────────────────────────────────────────
     st.markdown("""
-    <div class="demo-card">
-        <div class="demo-card-title">💬 &nbsp;Live ad-lead example</div>
-        <div class="demo-bubble-label demo-bubble-label-user">Customer</div>
-        <div class="demo-bubble demo-bubble-user">Hi, I'm interested in SHIRT001</div>
-        <div style="margin-top:12px;">
-            <div class="demo-bubble-label demo-bubble-label-halo">Halo</div>
-            <div class="demo-bubble demo-bubble-halo">Sure — this is your Cotton Casual Shirt. It's ₹799, available in M / L / XL and White, Sky Blue, and Navy. Which size works for you? 😊</div>
+    <div class="section-kicker">Why Halo</div>
+    <div class="section-title" style="margin-bottom:16px;">Product intelligence, built in.</div>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon fi-catalogue">
+                <div class="fi-inner fi-inner-catalogue"></div>
+            </div>
+            <h3>Product answers from catalogue</h3>
+            <p>Answer price, size, color, stock, delivery, exchange, and product link questions from uploaded product data.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-campaign">
+                <div class="fi-inner fi-inner-campaign"></div>
+            </div>
+            <h3>Campaign-code aware</h3>
+            <p>When leads arrive via SHIRT001 or JEANS001, Halo starts with that exact product instead of a generic reply.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-guided">
+                <div class="fi-inner fi-inner-guided"></div>
+            </div>
+            <h3>Guided selling</h3>
+            <p>Ask the right follow-up: size, color, budget, use-case, or checkout intent — in the customer's natural flow.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon fi-upsell">
+                <div class="fi-inner fi-inner-upsell"></div>
+            </div>
+            <h3>Smart upsell support</h3>
+            <p>Suggest matching products, combos, and offers only when they exist in brand data. No hallucinations.</p>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Who it's for ──────────────────────────────────────────────────────────
+    # ── Workflow grid ─────────────────────────────────────────────────────────
     st.markdown("""
-    <div class="for-section">
-        <h3>Made for brands that sell through conversations</h3>
-        <div class="for-pills">
-            <span class="for-pill">👗 Fashion &amp; Apparel</span>
-            <span class="for-pill">✨ Skincare &amp; Beauty</span>
-            <span class="for-pill">💍 Accessories &amp; Jewellery</span>
-            <span class="for-pill">🏡 Home &amp; Decor</span>
-            <span class="for-pill">🥗 Food &amp; Nutrition</span>
-            <span class="for-pill">💪 Fitness &amp; Health</span>
-            <span class="for-pill">📦 Any D2C brand on WhatsApp</span>
+    <div class="section-kicker">How it works</div>
+    <div class="section-title" style="margin-bottom:16px;">Live in four steps.</div>
+    <div class="workflow-grid">
+        <div class="workflow-step-card">
+            <div class="workflow-step-num">01</div>
+            <div class="workflow-step-title">Upload catalogue</div>
+            <p class="workflow-step-desc">Drop your product CSV with IDs, prices, sizes, colors, and campaign codes.</p>
+        </div>
+        <div class="workflow-step-card">
+            <div class="workflow-step-num">02</div>
+            <div class="workflow-step-title">Train Halo</div>
+            <p class="workflow-step-desc">Add brand identity, tone, FAQs, and policies. Halo learns your brand voice.</p>
+        </div>
+        <div class="workflow-step-card">
+            <div class="workflow-step-num">03</div>
+            <div class="workflow-step-title">Connect WhatsApp</div>
+            <p class="workflow-step-desc">Link your Twilio WhatsApp number. Route multiple brands using prefix codes.</p>
+        </div>
+        <div class="workflow-step-card">
+            <div class="workflow-step-num">04</div>
+            <div class="workflow-step-title">Convert leads</div>
+            <p class="workflow-step-desc">Halo handles incoming chats, answers queries, and guides buyers to checkout.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Audience section ──────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="audience-section">
+        <div class="section-kicker">Who it&#39;s for</div>
+        <div class="section-title">Built for brands where customers ask before buying.</div>
+        <div class="audience-pills">
+            <span class="audience-pill">Fashion &amp; Apparel</span>
+            <span class="audience-pill">Skincare &amp; Beauty</span>
+            <span class="audience-pill">Accessories &amp; Jewellery</span>
+            <span class="audience-pill">Home &amp; Decor</span>
+            <span class="audience-pill">Food &amp; Nutrition</span>
+            <span class="audience-pill">Fitness &amp; Lifestyle</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
