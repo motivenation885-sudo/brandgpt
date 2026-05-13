@@ -883,7 +883,7 @@ if not st.session_state.setup_done:
                         help="Activate this brand instantly without editing the form",
                     ):
                         _activate_profile(profiles[selected_profile])
-                        st.toast(f"'{selected_profile}' launched!", icon="✓")
+                        st.toast(f"'{selected_profile}' launched!", icon="✅")
                         st.rerun()
                 with btn_col2:
                     if st.button(
@@ -1122,7 +1122,7 @@ if not st.session_state.setup_done:
 
                 welcome = f"Hey! 👋 Main {brand_name} ka assistant hoon. Kaise help kar sakta hoon aapki?"
                 st.session_state.messages.append({"role": "assistant", "content": welcome})
-                st.toast(f"Profile '{brand_name}' saved — you can load it anytime.", icon="✓")
+                st.toast(f"Profile '{brand_name}' saved — you can load it anytime.", icon="✅")
                 st.rerun()
 
 
@@ -1203,7 +1203,7 @@ else:
             save_brand_file(brand)
             with open("active_brand.json", "w") as f:
                 json.dump(brand, f)
-            st.toast(f"Profile '{brand['name']}' saved!", icon="✓")
+            st.toast(f"Profile '{brand['name']}' saved!", icon="✅")
 
         if st.button("⚙️  New Brand Setup", use_container_width=True):
             st.session_state.setup_done = False
