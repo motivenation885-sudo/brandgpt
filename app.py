@@ -450,6 +450,191 @@ hr { border-color: #F3F4F6 !important; }
 }
 .stat-label { color: #9CA3AF; }
 .stat-value { color: #4F46E5; font-weight: 700; }
+
+/* ─── Homepage: value cards ─── */
+.value-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 28px 0 32px 0;
+}
+.value-card {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 18px;
+    padding: 24px 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s;
+}
+.value-card:hover { box-shadow: 0 6px 24px rgba(79,70,229,0.1); }
+.value-card-icon {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+    display: block;
+}
+.value-card h3 {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+}
+.value-card p {
+    font-size: 0.84rem;
+    color: #6B7280;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ─── Homepage: workflow strip ─── */
+.workflow-strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 18px;
+    padding: 20px 28px;
+    margin: 0 0 32px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    flex-wrap: wrap;
+}
+.workflow-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 130px;
+}
+.workflow-step-num {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.workflow-step-text { font-size: 0.84rem; font-weight: 600; color: #374151; }
+.workflow-arrow { color: #D1D5DB; font-size: 1.2rem; margin: 0 8px; flex-shrink: 0; }
+
+/* ─── Homepage: demo card ─── */
+.demo-card {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 20px;
+    padding: 24px 26px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    margin: 0 0 32px 0;
+}
+.demo-card-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4F46E5;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.demo-bubble {
+    border-radius: 14px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    max-width: 85%;
+}
+.demo-bubble-user {
+    background: #EEF2FF;
+    color: #3730A3;
+    border: 1px solid #C7D2FE;
+    margin-left: auto;
+    text-align: right;
+}
+.demo-bubble-halo {
+    background: #F9FAFB;
+    color: #374151;
+    border: 1px solid #E5E7EB;
+}
+.demo-bubble-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 3px;
+}
+.demo-bubble-label-user { color: #6366F1; text-align: right; }
+.demo-bubble-label-halo { color: #9CA3AF; }
+
+/* ─── Homepage: who-it's-for ─── */
+.for-section {
+    background: linear-gradient(135deg, #F5F3FF 0%, #EEF2FF 100%);
+    border: 1px solid #E0E7FF;
+    border-radius: 18px;
+    padding: 26px 28px;
+    margin: 0 0 32px 0;
+}
+.for-section h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0 0 16px 0;
+}
+.for-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.for-pill {
+    background: #ffffff;
+    border: 1px solid #C7D2FE;
+    color: #4F46E5;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 999px;
+}
+
+/* ─── Homepage: profiles card ─── */
+.profiles-card {
+    background: #ffffff;
+    border: 1px solid #E5E7EB;
+    border-radius: 18px;
+    padding: 22px 24px;
+    margin: 0 0 8px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.profiles-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px 0;
+}
+.profiles-card-sub {
+    font-size: 0.82rem;
+    color: #9CA3AF;
+    margin: 0 0 18px 0;
+}
+
+/* ─── Homepage: setup section heading ─── */
+.setup-heading {
+    margin: 36px 0 4px 0;
+}
+.setup-heading h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.02em;
+}
+.setup-heading p {
+    font-size: 0.9rem;
+    color: #6B7280;
+    margin: 0 0 20px 0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -842,85 +1027,176 @@ if not st.session_state.setup_done:
     # ── Hero ──────────────────────────────────────────────────────────────────
     st.markdown("""
     <div class="halo-hero">
-        <div class="halo-badge">✦ Powered by Halo</div>
-        <h1>Launch your AI WhatsApp<br>Sales Assistant</h1>
-        <p>Train Halo with your brand details, products, FAQs, and policies — go live in minutes.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+            <span class="halo-badge">AI WhatsApp Sales Assistant</span>
+            <span class="halo-badge">Built for D2C brands</span>
+            <span class="halo-badge">Catalogue-aware replies</span>
+        </div>
+        <h1>Halo turns WhatsApp chats<br>into sales conversations.</h1>
+        <p>Upload your products, offers, FAQs, and policies — Halo replies to customers on WhatsApp with accurate product details, recommendations, and purchase guidance.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Value cards ───────────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="value-grid">
+        <div class="value-card">
+            <span class="value-card-icon">⚡</span>
+            <h3>Answer product questions instantly</h3>
+            <p>Handle price, size, color, stock, delivery, exchange, and product link questions directly from your catalogue.</p>
+        </div>
+        <div class="value-card">
+            <span class="value-card-icon">🎯</span>
+            <h3>Convert ad leads faster</h3>
+            <p>When customers arrive from Meta or Instagram ads via campaign codes like <strong>SHIRT001</strong>, Halo continues the chat around that exact product.</p>
+        </div>
+        <div class="value-card">
+            <span class="value-card-icon">🛍️</span>
+            <h3>Recommend and upsell naturally</h3>
+            <p>Suggest relevant combos, offers, and matching products — only from your uploaded brand data. No hallucinations.</p>
+        </div>
+        <div class="value-card">
+            <span class="value-card-icon">🧠</span>
+            <h3>Reduce manual WhatsApp workload</h3>
+            <p>Let Halo handle repetitive questions while your team focuses on hot buyers who are ready to close.</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Workflow strip ────────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="workflow-strip">
+        <div class="workflow-step">
+            <div class="workflow-step-num">1</div>
+            <span class="workflow-step-text">Upload catalogue</span>
+        </div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">
+            <div class="workflow-step-num">2</div>
+            <span class="workflow-step-text">Train Halo</span>
+        </div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">
+            <div class="workflow-step-num">3</div>
+            <span class="workflow-step-text">Connect WhatsApp</span>
+        </div>
+        <span class="workflow-arrow">→</span>
+        <div class="workflow-step">
+            <div class="workflow-step-num">4</div>
+            <span class="workflow-step-text">Convert leads</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Demo conversation card ─────────────────────────────────────────────────
+    st.markdown("""
+    <div class="demo-card">
+        <div class="demo-card-title">💬 &nbsp;Live ad-lead example</div>
+        <div class="demo-bubble-label demo-bubble-label-user">Customer</div>
+        <div class="demo-bubble demo-bubble-user">Hi, I'm interested in SHIRT001</div>
+        <div style="margin-top:12px;">
+            <div class="demo-bubble-label demo-bubble-label-halo">Halo</div>
+            <div class="demo-bubble demo-bubble-halo">Sure — this is your Cotton Casual Shirt. It's ₹799, available in M / L / XL and White, Sky Blue, and Navy. Which size works for you? 😊</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── Who it's for ──────────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="for-section">
+        <h3>Made for brands that sell through conversations</h3>
+        <div class="for-pills">
+            <span class="for-pill">👗 Fashion &amp; Apparel</span>
+            <span class="for-pill">✨ Skincare &amp; Beauty</span>
+            <span class="for-pill">💍 Accessories &amp; Jewellery</span>
+            <span class="for-pill">🏡 Home &amp; Decor</span>
+            <span class="for-pill">🥗 Food &amp; Nutrition</span>
+            <span class="for-pill">💪 Fitness &amp; Health</span>
+            <span class="for-pill">📦 Any D2C brand on WhatsApp</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ── Saved Brand Profiles ──────────────────────────────────────────────────
     profiles = load_saved_profiles()
-    st.markdown('<div class="profile-section-title">◈ Saved Brand Profiles</div>', unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="profiles-card">
+        <div class="profiles-card-title">Saved Brand Profiles</div>
+        <div class="profiles-card-sub">Load an existing brand assistant for testing or demo.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     with st.container():
         if not profiles:
             st.markdown(
-                '<div class="profile-section">'
-                '<p style="color:#64748b;font-size:0.88rem;margin:0;">No saved profiles yet. '
-                'Fill the form below and launch to create your first saved profile.</p>'
-                '</div>',
+                '<p style="color:#9CA3AF;font-size:0.88rem;margin:0 0 24px 0;">'
+                'No saved profiles yet — fill the form below and launch to create your first profile.</p>',
                 unsafe_allow_html=True,
             )
         else:
-            with st.container():
-                st.markdown('<div class="profile-section">', unsafe_allow_html=True)
-                profile_names = list(profiles.keys())
-                selected_profile = st.selectbox(
-                    "Load saved profile",
-                    ["— Select a saved profile —"] + profile_names,
-                    key="profile_selector",
-                    label_visibility="collapsed",
-                )
-                profile_chosen = selected_profile != "— Select a saved profile —"
+            profile_names = list(profiles.keys())
+            selected_profile = st.selectbox(
+                "Load saved profile",
+                ["— Select a saved profile —"] + profile_names,
+                key="profile_selector",
+                label_visibility="collapsed",
+            )
+            profile_chosen = selected_profile != "— Select a saved profile —"
 
-                btn_col1, btn_col2, btn_col3 = st.columns([2, 2, 1])
-                with btn_col1:
-                    if st.button(
-                        "⚡  Quick Launch",
-                        use_container_width=True,
-                        disabled=not profile_chosen,
-                        key="quick_launch_btn",
-                        help="Activate this brand instantly without editing the form",
-                    ):
-                        _activate_profile(profiles[selected_profile])
-                        st.toast(f"'{selected_profile}' launched!", icon="✅")
-                        st.rerun()
-                with btn_col2:
-                    if st.button(
-                        "📋  Fill Form",
-                        use_container_width=True,
-                        disabled=not profile_chosen,
-                        key="fill_form_btn",
-                        help="Pre-fill the setup form with this profile's data",
-                    ):
-                        prof = profiles[selected_profile]
-                        st.session_state.prefill = prof
-                        if prof.get("uploaded_products"):
-                            st.session_state.parsed_catalogue = {
-                                "products": prof["uploaded_products"],
-                                "columns": prof.get("uploaded_product_columns", []),
-                                "context": prof.get("uploaded_product_context", ""),
-                                "campaigns": prof.get("campaign_lookup", ""),
-                            }
-                        else:
-                            st.session_state.parsed_catalogue = None
-                        st.rerun()
-                with btn_col3:
-                    if st.button(
-                        "🗑",
-                        use_container_width=True,
-                        disabled=not profile_chosen,
-                        key="delete_profile_btn",
-                        help="Delete this saved profile",
-                    ):
-                        delete_profile(selected_profile)
-                        if st.session_state.prefill.get("name") == selected_profile:
-                            st.session_state.prefill = {}
-                        st.toast(f"Profile '{selected_profile}' deleted.")
-                        st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+            btn_col1, btn_col2, btn_col3 = st.columns([2, 2, 1])
+            with btn_col1:
+                if st.button(
+                    "⚡  Quick Launch",
+                    use_container_width=True,
+                    disabled=not profile_chosen,
+                    key="quick_launch_btn",
+                    help="Activate this brand instantly without editing the form",
+                ):
+                    _activate_profile(profiles[selected_profile])
+                    st.toast(f"'{selected_profile}' launched!", icon="✅")
+                    st.rerun()
+            with btn_col2:
+                if st.button(
+                    "📋  Fill Form",
+                    use_container_width=True,
+                    disabled=not profile_chosen,
+                    key="fill_form_btn",
+                    help="Pre-fill the setup form with this profile's data",
+                ):
+                    prof = profiles[selected_profile]
+                    st.session_state.prefill = prof
+                    if prof.get("uploaded_products"):
+                        st.session_state.parsed_catalogue = {
+                            "products": prof["uploaded_products"],
+                            "columns": prof.get("uploaded_product_columns", []),
+                            "context": prof.get("uploaded_product_context", ""),
+                            "campaigns": prof.get("campaign_lookup", ""),
+                        }
+                    else:
+                        st.session_state.parsed_catalogue = None
+                    st.rerun()
+            with btn_col3:
+                if st.button(
+                    "🗑",
+                    use_container_width=True,
+                    disabled=not profile_chosen,
+                    key="delete_profile_btn",
+                    help="Delete this saved profile",
+                ):
+                    delete_profile(selected_profile)
+                    if st.session_state.prefill.get("name") == selected_profile:
+                        st.session_state.prefill = {}
+                    st.toast(f"Profile '{selected_profile}' deleted.")
+                    st.rerun()
 
-    st.markdown("---")
+    # ── Setup form heading ────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="setup-heading">
+        <h2>Create your assistant</h2>
+        <p>Fill brand details, upload your product catalogue, and launch Halo in minutes.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     # ── Catalogue upload (outside form so it parses immediately) ──────────────
     pf = st.session_state.prefill  # shorthand

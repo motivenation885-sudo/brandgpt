@@ -1,0 +1,195 @@
+This is Halo WhatsApp bot.
+
+Files:
+- app.py = Streamlit UI + homepage/setup + brand board/chat + CSV upload + profile management
+- webhook.py = WhatsApp webhook
+- serve.py = server
+
+TASK:
+Fix and upgrade ONLY the homepage / landing setup screen in app.py.
+
+Do NOT work on the brand board/chat page yet.
+Do NOT work on sidebar yet.
+Do NOT touch webhook.py.
+Do NOT touch serve.py.
+
+STRICT RULES:
+1. Change ONLY app.py.
+2. Do not change AI logic.
+3. Do not change Groq calls.
+4. Do not change CSV/Excel parsing logic.
+5. Do not change active_brand.json structure.
+6. Do not change saved profile logic.
+7. Do not change system prompt behavior.
+8. Do not add backend/database/auth/new architecture.
+9. Do not break the existing setup form.
+10. Do not break profile load/save.
+11. Do not break CSV upload.
+12. Focus only on homepage visual layout, positioning, copy, and first impression.
+
+CURRENT PROBLEM:
+The homepage is too plain and does not clearly communicate what Halo does.
+It looks like a basic form, not a premium SaaS product.
+We need the homepage to explain:
+- what Halo is
+- who it is for
+- how it helps D2C brands
+- how the workflow works
+- why catalogue upload/campaign code matters
+
+BRANDING:
+App name: Halo
+Positioning: AI WhatsApp Sales Assistant for D2C brands
+
+MAIN HOMEPAGE GOAL:
+Make the homepage feel like a serious premium SaaS landing/setup page, not a plain Streamlit form.
+
+VISUAL STYLE:
+- Soft premium SaaS style
+- Not too dark, not too light
+- Background: warm off-white / soft grey
+- Cards: clean white / soft glass
+- Accent: indigo/blue/purple
+- Text: charcoal/slate
+- Soft shadows
+- Rounded corners
+- Nice badges
+- Rich but clean layout
+- More visual than current plain page
+
+HOMEPAGE STRUCTURE:
+
+1. Hero Section
+Create a premium hero at the top.
+
+Headline:
+“Halo turns WhatsApp chats into sales conversations.”
+
+Subheadline:
+“Upload your products, offers, FAQs, and policies — Halo replies to customers on WhatsApp with accurate product details, recommendations, and purchase guidance.”
+
+Badges:
+- AI WhatsApp Sales Assistant
+- Built for D2C brands
+- Catalogue-aware replies
+
+CTA buttons:
+- “Create Brand Assistant”
+- “Load Saved Profile”
+
+Do not make buttons non-functional if they require new behavior.
+They can scroll/anchor visually or just sit above existing form.
+
+2. Value Cards
+Add 4 premium cards:
+
+Card 1:
+“Answer product questions instantly”
+Copy:
+“Handle price, size, color, stock, delivery, exchange, and product link questions from your catalogue.”
+
+Card 2:
+“Convert ad leads faster”
+Copy:
+“When customers come from Meta/Instagram ads using campaign codes like SHIRT001, Halo continues the chat around that exact product.”
+
+Card 3:
+“Recommend and upsell naturally”
+Copy:
+“Suggest relevant combos, offers, and matching products only from uploaded brand data.”
+
+Card 4:
+“Reduce manual WhatsApp workload”
+Copy:
+“Let Halo handle repetitive questions while your team focuses on hot buyers.”
+
+3. Workflow Strip
+Add a clean horizontal workflow:
+
+“Upload catalogue”
+→ “Train Halo”
+→ “Connect WhatsApp”
+→ “Convert leads”
+
+Each step should look like a small premium pill/card.
+
+4. Demo Conversation Card
+Add a right-side or below-hero preview card.
+
+Title:
+“Live ad-lead example”
+
+Customer:
+“Hi, I’m interested in SHIRT001”
+
+Halo:
+“Sure — this is your Cotton Casual Shirt. It’s ₹799, available in M/L/XL and White/Sky Blue/Navy. Which size do you prefer?”
+
+This is only UI preview text. Do not connect it to backend.
+
+5. Who It’s For Section
+Add a small section:
+
+“Made for brands that sell through conversations”
+
+Bullets/cards:
+- Fashion & apparel
+- Skincare & beauty
+- Accessories & jewellery
+- Home & decor
+- Any D2C brand running WhatsApp/Meta ad leads
+
+6. Setup Form Placement
+Keep the existing brand setup form, but make it feel like the next step after the homepage sections.
+
+Add section heading:
+“Create your assistant”
+
+Subtext:
+“Fill brand details, upload catalogue, and launch Halo in minutes.”
+
+Do not remove any existing setup fields.
+Do not break form submit.
+Do not break saved profiles area.
+
+7. Saved Profiles Area
+On homepage, improve the visual presentation of saved profiles if already present:
+- Make it a proper card section
+- Add heading: “Saved Brand Profiles”
+- Add short explanation: “Load an existing brand assistant for testing or demo.”
+- Keep existing dropdown/buttons behavior.
+- Do not rebuild profile logic.
+
+8. Image/Visual Options
+If the app already supports logo/cover fields, show homepage preview naturally.
+If it does not support them yet, do NOT add new backend behavior in this prompt.
+Only add static visual placeholders/cards/icons.
+
+9. Fix homepage spacing
+- Page should not have huge empty gaps.
+- Content should be centered with max-width.
+- Cards should align nicely.
+- It should look good on laptop screen.
+- Avoid horizontal scroll.
+
+10. Copy quality
+Tone should feel premium and clear.
+No generic “AI bot” language.
+No “BrandBot” visible anywhere on homepage.
+Use “Halo” everywhere.
+
+IMPORTANT:
+Do not modify the chat/brand board page in this task.
+Do not modify webhook.
+Do not modify serve.
+Do not modify AI prompt.
+Do not modify catalogue parsing.
+
+After changes:
+- Print exact files changed.
+- Confirm only app.py changed.
+- Confirm homepage was changed only.
+- Confirm setup form still works.
+- Confirm saved profile load still works.
+- Confirm CSV upload still works.
+- Confirm chat page was not modified.
