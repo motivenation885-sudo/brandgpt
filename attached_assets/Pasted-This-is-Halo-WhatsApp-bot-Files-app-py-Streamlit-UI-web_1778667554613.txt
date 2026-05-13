@@ -1,0 +1,132 @@
+This is Halo WhatsApp bot.
+
+Files:
+- app.py = Streamlit UI
+- webhook.py = WhatsApp webhook
+- serve.py = server
+
+TASK:
+Fix ONLY app.py UI.
+
+STRICT RULES:
+1. Change ONLY app.py.
+2. Do not touch webhook.py.
+3. Do not touch serve.py.
+4. Do not change AI logic.
+5. Do not change Groq calls.
+6. Do not change CSV/Excel parsing logic.
+7. Do not change active_brand.json save/load structure.
+8. Do not change system prompt behavior.
+9. Do not add backend features.
+10. Only fix visual UI, sidebar layout, and chat input styling bugs.
+
+CURRENT PROBLEM:
+The UI is too dark and not premium enough. Also the bottom chat input area has a white/ugly block bug, and sidebar layout/visibility needs fixing.
+
+NEW DESIGN DIRECTION:
+Make the UI premium, modern, and soft — not too dark, not too light.
+
+Use this visual direction:
+- Background: warm off-white / soft grey (#F6F4EF or #F7F7FB)
+- Cards: white / very light glass (#FFFFFF with subtle border)
+- Text: charcoal / slate (#111827 / #1F2937)
+- Accent: premium indigo/blue (#4F46E5 / #2563EB)
+- Secondary accent: muted purple (#7C3AED)
+- Borders: soft grey (#E5E7EB)
+- Shadows: very soft, luxury SaaS style
+- Corners: 18px-24px rounded
+- No harsh black full-screen background
+- No ugly white strip behind chat input
+
+STYLE GOAL:
+It should look like a premium SaaS dashboard / CRM:
+Clean, airy, expensive, polished, productized.
+
+FIX THESE UI ISSUES:
+
+1. Main background:
+- Replace full dark background with soft premium light background.
+- Avoid pure white empty screen.
+- Use subtle radial/gradient background if possible.
+
+2. Header card:
+- Brand card should be light, premium, and readable.
+- Show brand name, industry, tone, catalogue status.
+- Keep “Live Assistant” pill.
+- Card should not look like a dark block.
+
+3. Chat area:
+- Make chat container centered and clean.
+- Assistant messages: white/light card with subtle border.
+- User messages: light indigo/blue tinted card.
+- Improve text contrast and font size.
+- Reduce excessive empty space.
+- Make chat feel like a real app, not raw Streamlit.
+
+4. Chat input bug:
+- The bottom chat input currently has an ugly white horizontal block/strip.
+- Fix chat input container styling.
+- The chat input area should blend with soft background.
+- Input should be clean rounded pill/card.
+- Text should be readable.
+- Send arrow should not float awkwardly.
+- Use stable Streamlit selectors where possible:
+  [data-testid="stChatInput"]
+  [data-testid="stChatInput"] textarea
+  [data-testid="stChatInput"] div
+
+5. Sidebar bug:
+- Fix sidebar styling so it is readable and premium.
+- Sidebar should not disappear or look broken.
+- Use a soft light sidebar with cards.
+- Sidebar should show:
+  Halo logo/title
+  Active brand card
+  Catalogue status
+  Product count
+  Campaign count
+  Conversation count
+  Clear chat button
+  Reset/new brand button
+  Test prompts
+- Make sidebar spacing clean and compact.
+- No cramped text.
+- No dark unreadable labels.
+
+6. Setup page:
+- Apply same soft premium theme.
+- Onboarding form should look like a clean SaaS setup wizard.
+- Product upload section should be clean.
+- CSV preview should fit properly.
+- Error/warning boxes should look neat.
+
+7. Remove/avoid:
+- Full black/dark background
+- Harsh neon
+- Ugly white bottom strip
+- Low contrast text
+- Broken sidebar
+- Duplicate headers
+- Random Streamlit default look
+- Any visible “BrandBot” text; use “Halo”
+
+8. Keep functionality:
+- Brand setup must still work.
+- CSV upload must still work.
+- active_brand.json must still save correctly.
+- Chat must still work.
+- Sidebar buttons must still work.
+
+Design copy:
+Use visible app name:
+“Halo”
+Subtitle:
+“AI WhatsApp Sales Assistant”
+
+After changes:
+- Print exact files changed.
+- Confirm only app.py changed.
+- Confirm webhook.py and serve.py untouched.
+- Confirm chat input white-strip bug fixed.
+- Confirm sidebar styling fixed.
+- Confirm CSV upload still works.
