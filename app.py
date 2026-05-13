@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import json
 import streamlit as st
 import pandas as pd
@@ -339,6 +340,24 @@ hr { border-color: rgba(139, 92, 246, 0.15) !important; }
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 PROFILES_FILE = "saved_profiles.json"
+BRANDS_DIR = "brands"
+
+
+def make_brand_id(name: str) -> str:
+    """Lowercase, spaces → underscores, strip special chars. 'The Outfit Room' → 'the_outfit_room'."""
+    s = (name or "").lower().strip()
+    s = re.sub(r"[^a-z0-9_\s-]", "", s)
+    s = re.sub(r"[\s-]+", "_", s)
+    return s.strip("_") or "brand"
+
+
+def save_brand_file(brand_cfg: dict) -> None:
+    """Persist a brand to brands/{brand_id}.json for webhook routing."""
+    bid = brand_cfg.get("brand_id") or make_brand_id(brand_cfg.get("name", ""))
+    os.makedirs(BRANDS_DIR, exist_ok=True)
+    with open(os.path.join(BRANDS_DIR, f"{bid}.json"), "w") as f:
+        json.dump(brand_cfg, f, indent=2)
+
 
 INDUSTRIES = [
     "Clothing & Fashion",
@@ -681,6 +700,10 @@ def chat_with_brand(user_message, brand_config, chat_history):
 # ── Helper: activate a brand profile immediately ──────────────────────────────
 def _activate_profile(profile: dict):
     """Set session state to go directly to chat with this profile."""
+    # Backfill brand_id / whatsapp_number for legacy profiles
+    profile.setdefault("brand_id", make_brand_id(profile.get("name", "")))
+    profile.setdefault("whatsapp_number", "")
+
     st.session_state.brand_config = profile
     st.session_state.setup_done = True
     st.session_state.prefill = {}
@@ -693,6 +716,7 @@ def _activate_profile(profile: dict):
     ]
     with open("active_brand.json", "w") as f:
         json.dump(profile, f)
+    save_brand_file(profile)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -928,6 +952,14 @@ if not st.session_state.setup_done:
                 height=80,
             )
 
+            st.markdown('<div class="section-label">WhatsApp Routing</div>', unsafe_allow_html=True)
+            whatsapp_number = st.text_input(
+                "WhatsApp Number (Optional)",
+                value=pf.get("whatsapp_number", ""),
+                placeholder="whatsapp:+14155238886",
+                help="Twilio WhatsApp number for this brand. If multiple brands share one Twilio Sandbox, use prefix routing (e.g. /outfit) instead.",
+            )
+
         st.markdown("<br>", unsafe_allow_html=True)
         submitted = st.form_submit_button(
             "🚀  Launch Halo Assistant", use_container_width=True
@@ -945,6 +977,8 @@ if not st.session_state.setup_done:
             else:
                 brand_cfg = {
                     "name": brand_name,
+                    "brand_id": make_brand_id(brand_name),
+                    "whatsapp_number": (whatsapp_number or "").strip(),
                     "industry": industry,
                     "tone": tone,
                     "description": description,
@@ -964,6 +998,9 @@ if not st.session_state.setup_done:
                 # Save active brand for webhook.py
                 with open("active_brand.json", "w") as f:
                     json.dump(brand_cfg, f)
+
+                # Multi-tenant: also save to brands/{brand_id}.json for webhook routing
+                save_brand_file(brand_cfg)
 
                 # Auto-save profile
                 save_profile(brand_name, brand_cfg)
@@ -1045,7 +1082,12 @@ else:
         st.markdown('<div class="section-label">Profile</div>', unsafe_allow_html=True)
 
         if st.button("💾  Save Current Profile", use_container_width=True):
+            brand.setdefault("brand_id", make_brand_id(brand.get("name", "")))
+            brand.setdefault("whatsapp_number", "")
             save_profile(brand["name"], brand)
+            save_brand_file(brand)
+            with open("active_brand.json", "w") as f:
+                json.dump(brand, f)
             st.toast(f"Profile '{brand['name']}' saved!", icon="✓")
 
         if st.button("⚙️  New Brand Setup", use_container_width=True):

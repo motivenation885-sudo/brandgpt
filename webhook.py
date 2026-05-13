@@ -49,16 +49,69 @@ def _groq() -> Groq:
 
 
 _BRAND_FILE = "active_brand.json"
+_BRANDS_DIR = "brands"
+
+# Prefix routing for Twilio Sandbox testing (one number → many brands).
+# Maps "/prefix" → brand_id (file: brands/{brand_id}.json)
+_PREFIX_MAP = {
+    "/outfit":   "the_outfit_room",
+    "/bareform": "bareform",
+}
 
 
-def _load_brand() -> dict | None:
+def _read_brand_file(path: str) -> dict | None:
     try:
-        if os.path.exists(_BRAND_FILE):
-            with open(_BRAND_FILE) as f:
-                return json.load(f)
+        with open(path) as f:
+            return json.load(f)
     except Exception:
-        pass
-    return None
+        return None
+
+
+def _load_brand(to_number: str | None = None, message_body: str | None = None):
+    """
+    Multi-tenant brand routing.
+
+    Returns: (brand: dict | None, cleaned_message: str, routing_method: str)
+      routing_method ∈ {"prefix", "whatsapp_number", "fallback", "none"}
+    """
+    msg = (message_body or "").strip()
+    cleaned = msg
+
+    # A. Prefix test routing
+    if msg:
+        first_token = msg.split(None, 1)[0].lower()
+        if first_token in _PREFIX_MAP:
+            bid = _PREFIX_MAP[first_token]
+            path = os.path.join(_BRANDS_DIR, f"{bid}.json")
+            brand = _read_brand_file(path)
+            if brand is not None:
+                # Strip the prefix (and the single space after it, if any)
+                rest = msg[len(first_token):].lstrip()
+                return brand, rest, "prefix"
+
+    # B. WhatsApp "To" number routing
+    to_norm = (to_number or "").strip()
+    if to_norm and os.path.isdir(_BRANDS_DIR):
+        try:
+            for fname in os.listdir(_BRANDS_DIR):
+                if not fname.endswith(".json"):
+                    continue
+                b = _read_brand_file(os.path.join(_BRANDS_DIR, fname))
+                if not b:
+                    continue
+                wa = (b.get("whatsapp_number") or "").strip()
+                if wa and wa == to_norm:
+                    return b, cleaned, "whatsapp_number"
+        except Exception:
+            pass
+
+    # C. Fallback to active_brand.json (legacy single-brand behaviour)
+    if os.path.exists(_BRAND_FILE):
+        b = _read_brand_file(_BRAND_FILE)
+        if b is not None:
+            return b, cleaned, "fallback"
+
+    return None, cleaned, "none"
 
 
 def _build_prompt(brand: dict) -> str:
@@ -182,22 +235,34 @@ async def webhook_post(request: Request) -> Response:
 
     sender  = (form.get("From", "") or "").strip()
     message = (form.get("Body",  "") or "").strip()
+    to_num  = (form.get("To",   "") or "").strip()
 
     print("WEBHOOK_POST_RECEIVED", flush=True)
-    print(f"FROM={sender}",        flush=True)
-    print(f"BODY={message}",       flush=True)
+    print(f"FROM={sender}",            flush=True)
+    print(f"BODY={message}",           flush=True)
+    print(f"INCOMING_TO_NUMBER={to_num}", flush=True)
 
     if not sender or not message:
         return _twiml_response("Message nahi mila. Dobara try karo.")
 
-    brand = _load_brand()
+    brand, message, routing_method = _load_brand(to_number=to_num, message_body=message)
+    print(f"MULTITENANT_ROUTING_METHOD={routing_method}", flush=True)
+
     if brand is None:
+        print("LOADED_BRAND_ID=NONE", flush=True)
+        print("LOADED_BRAND_NAME=NONE", flush=True)
         print("ACTIVE_BRAND_LOADED=NONE", flush=True)
         return _twiml_response(
             "Brand setup nahi hai. Pehle Halo app mein brand configure karo."
         )
 
+    print(f"LOADED_BRAND_ID={brand.get('brand_id', '')}", flush=True)
+    print(f"LOADED_BRAND_NAME={brand['name']}", flush=True)
     print(f"ACTIVE_BRAND_LOADED={brand['name']}", flush=True)
+
+    # If prefix routing stripped the body to empty, treat as a greeting
+    if not message:
+        message = "hi"
     _uc = bool(brand.get("use_uploaded_catalogue")) and bool(brand.get("uploaded_product_context"))
     print(f"WEBHOOK_CATALOGUE_CONTEXT_USED={str(_uc).lower()}", flush=True)
     print(f"WEBHOOK_CAMPAIGN_LOOKUP_USED={str(_uc and bool(brand.get('campaign_lookup'))).lower()}", flush=True)
