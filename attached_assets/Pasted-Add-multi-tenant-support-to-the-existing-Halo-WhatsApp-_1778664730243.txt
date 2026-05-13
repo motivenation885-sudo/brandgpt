@@ -1,0 +1,86 @@
+Add multi-tenant support to the existing Halo WhatsApp bot.
+
+CRITICAL:
+Do NOT change existing AI logic, system prompts, conversation handling, Groq calls, TwiML responses, or webhook response format.
+Only add a brand routing layer on top.
+
+CURRENT STATE:
+- app.py saves brand config to active_brand.json
+- webhook.py reads active_brand.json to get brand config
+- This works for single brand only
+
+WHAT TO ADD:
+
+1. Create folder:
+brands/
+
+2. Add a safe brand_id generator:
+brand_id = lowercase brand name, spaces replaced with underscores, remove special characters.
+Example:
+"The Outfit Room" -> "the_outfit_room"
+
+3. In app.py:
+- Add optional field in brand setup form:
+  "WhatsApp Number"
+  placeholder: "whatsapp:+14155238886"
+- When brand is saved/activated, save config to BOTH:
+  a. active_brand.json
+  b. brands/{brand_id}.json
+- Add these fields to config:
+  brand_id
+  whatsapp_number
+
+4. In webhook.py:
+Update only brand loading/routing logic.
+
+Modify _load_brand() so it accepts:
+_load_brand(to_number=None, message_body=None)
+
+Routing order:
+A. Prefix test routing:
+   If message starts with "/outfit", load brands/the_outfit_room.json and remove prefix.
+   If message starts with "/bareform", load brands/bareform.json and remove prefix.
+   This is only for Twilio Sandbox testing.
+
+B. WhatsApp number routing:
+   Get Twilio "To" number from request:
+   self.get_body_argument("To", "")
+   Loop through all brands/*.json.
+   If brand["whatsapp_number"] matches To number, load that brand.
+
+C. Fallback:
+   If no brand matched, load active_brand.json exactly like before.
+
+5. In post() handler:
+- Read Body, From, To.
+- Pass To and Body into _load_brand().
+- If prefix was used, use the cleaned message body for reply generation.
+- Otherwise use original Body.
+
+6. Do NOT touch:
+- _generate_reply()
+- _build_prompt()
+- _needs_human()
+- _send_telegram_alert()
+- conversation history logic
+- Groq API calls
+- TwiML response format
+- CSV parsing logic
+- uploaded catalogue logic
+
+7. Add console logs:
+- MULTITENANT_ROUTING_METHOD = prefix / whatsapp_number / fallback
+- INCOMING_TO_NUMBER
+- LOADED_BRAND_ID
+- LOADED_BRAND_NAME
+
+8. Test:
+- Save The Outfit Room with whatsapp_number.
+- Save another brand with whatsapp_number.
+- If using same Twilio Sandbox number, test using prefixes:
+  /outfit hello
+  /bareform hello
+- If using different WhatsApp numbers, test by To number routing.
+
+Print exact files changed.
+Confirm AI logic was not changed.
