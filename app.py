@@ -1200,39 +1200,9 @@ def _activate_profile(profile: dict):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# TOP NAVIGATION
-# ══════════════════════════════════════════════════════════════════════════════
-def render_top_nav():
-    has_brand = bool(st.session_state.brand_config)
-    cols = st.columns([3, 1, 1, 1, 1])
-    with cols[0]:
-        st.markdown(
-            '<div style="display:flex;align-items:center;gap:10px;padding-top:6px;">'
-            '<div class="halo-logo-mark" style="width:32px;height:32px;"></div>'
-            '<div style="font-weight:700;font-size:1.1rem;">Halo</div>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-    with cols[1]:
-        if st.button("Home", use_container_width=True, key="nav_home"):
-            go_to_page("home")
-    with cols[2]:
-        if st.button("Create", use_container_width=True, key="nav_create"):
-            go_to_page("create")
-    with cols[3]:
-        if st.button("Profiles", use_container_width=True, key="nav_profiles"):
-            go_to_page("profiles")
-    with cols[4]:
-        if st.button("Board", use_container_width=True, key="nav_board", disabled=not has_brand):
-            go_to_page("board")
-    st.markdown("<br>", unsafe_allow_html=True)
-
-
-# ══════════════════════════════════════════════════════════════════════════════
 # HOME PAGE
 # ══════════════════════════════════════════════════════════════════════════════
 def render_home_page():
-    render_top_nav()
 
     # ── Top brand bar ─────────────────────────────────────────────────────────
     st.markdown("""
@@ -1384,7 +1354,8 @@ def render_home_page():
 # PROFILES PAGE
 # ══════════════════════════════════════════════════════════════════════════════
 def render_profiles_page():
-    render_top_nav()
+    if st.button("← Back to home", key="profiles_back"):
+        go_to_page("home")
 
     profiles = load_saved_profiles()
 
@@ -1474,7 +1445,8 @@ def render_profiles_page():
 # CREATE PAGE
 # ══════════════════════════════════════════════════════════════════════════════
 def render_create_page():
-    render_top_nav()
+    if st.button("← Back to home", key="create_back"):
+        go_to_page("home")
 
     # ── Setup form heading ────────────────────────────────────────────────────
     st.markdown("""

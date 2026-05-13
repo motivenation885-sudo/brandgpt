@@ -1,0 +1,80 @@
+Fix only app.py UI/navigation.
+
+Current problem:
+Replit added an extra top navigation bar with buttons:
+Home / Create / Profiles / Board
+
+This looks bad and creates duplicate UI. It also shows two Halo logos/brand areas.
+
+Required fix:
+1. Remove the extra top navigation bar completely.
+2. Remove the duplicate Halo brand/logo block.
+3. Keep only ONE Halo brand identity on the homepage.
+4. Keep the original homepage CTA buttons:
+   - Create assistant
+   - Load saved profile
+5. Make those original CTA buttons functional:
+   - Create assistant should navigate to the create/setup page
+   - Load saved profile should navigate to the saved profiles page
+6. Do not show Home/Create/Profiles/Board buttons at the top.
+7. Do not create new button sets.
+8. Do not change backend logic.
+9. Do not change webhook.py.
+10. Do not change serve.py.
+11. Do not change AI logic.
+12. Do not change Groq calls.
+13. Do not change CSV parsing.
+14. Do not change active_brand.json structure.
+15. Do not change profile save/load logic except connecting existing CTA buttons to page state.
+
+Navigation behavior:
+Use st.session_state.current_page internally, but do NOT show a visible top navigation bar.
+
+Allowed navigation:
+- Homepage has only the two main CTA buttons:
+  Create assistant
+  Load saved profile
+- Create/setup page can have a small back button:
+  ← Back to home
+- Saved profiles page can have a small back button:
+  ← Back to home
+- Brand board/chat page can have sidebar actions only, not a top nav:
+  Reset/New Brand
+  Load Profile
+  Clear Chat
+
+Page rules:
+1. Home page:
+   Show landing page only.
+   Show ONE Halo logo/brand identity.
+   Show main CTA buttons.
+   Do not show setup form directly.
+
+2. Create page:
+   Show existing setup form.
+   Keep CSV upload working.
+   On launch, save active_brand.json and go to board.
+
+3. Profiles page:
+   Show saved profile loading/deleting UI.
+   On load, write active_brand.json and go to board.
+
+4. Board page:
+   Show existing chat/brand board.
+
+Important:
+The visible UI should not look like a raw app router.
+No top nav.
+No duplicate Halo.
+No duplicate button groups.
+
+After fix:
+- Print exact files changed.
+- Confirm only app.py changed.
+- Confirm top Home/Create/Profiles/Board buttons removed.
+- Confirm duplicate Halo removed.
+- Confirm Create assistant button works.
+- Confirm Load saved profile button works.
+- Confirm setup form still works.
+- Confirm saved profiles still work.
+- Confirm chat board still works.
