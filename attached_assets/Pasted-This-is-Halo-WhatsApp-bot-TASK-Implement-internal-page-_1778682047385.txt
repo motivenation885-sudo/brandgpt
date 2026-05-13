@@ -1,0 +1,157 @@
+This is Halo WhatsApp bot.
+
+TASK:
+Implement internal page navigation in app.py. Do NOT change colors/design this time.
+
+STRICT RULES:
+1. Change ONLY app.py.
+2. Do not touch webhook.py.
+3. Do not touch serve.py.
+4. Do not change AI logic.
+5. Do not change Groq calls.
+6. Do not change CSV/Excel parsing logic.
+7. Do not change active_brand.json structure.
+8. Do not change saved profile data structure.
+9. Do not change CSS/colors/design.
+10. Do not break profile save/load/delete.
+11. Do not break CSV upload.
+12. Do not break chat.
+
+CURRENT BUG:
+Previous task only changed colors. It did NOT create separate internal pages.
+
+REQUIRED RESULT:
+The app must have 4 internal pages controlled by st.session_state.current_page:
+
+1. home
+2. create
+3. profiles
+4. board
+
+DEFAULT PAGE LOGIC:
+- If "current_page" not in session_state:
+  - if setup_done is True and brand_config exists: current_page = "board"
+  - else: current_page = "home"
+
+CREATE HELPER:
+def go_to_page(page_name):
+    st.session_state.current_page = page_name
+    st.rerun()
+
+TOP NAVIGATION:
+Add a small navigation/header visible on pages:
+- Halo
+- Home button → current_page="home"
+- Create button → current_page="create"
+- Profiles button → current_page="profiles"
+- Board button → current_page="board" only if brand_config exists
+
+HOME PAGE:
+Home page should show only:
+- landing/hero content
+- value cards
+- workflow
+- who it is for
+- CTA buttons
+
+IMPORTANT:
+Do NOT show brand setup form on home page.
+Do NOT show saved profiles management on home page.
+
+HOME CTA BUTTONS:
+- "Create assistant" button must set current_page="create"
+- "Load saved profile" button must set current_page="profiles"
+
+CREATE PAGE:
+Move the existing brand setup form here.
+This includes:
+- brand basics
+- product/manual input
+- CSV/Excel upload
+- FAQs
+- instructions
+- launch/save button
+
+On successful submit:
+- keep existing save to active_brand.json
+- keep existing profile save behavior
+- set st.session_state.brand_config = brand_cfg
+- set st.session_state.setup_done = True
+- set st.session_state.current_page = "board"
+- reset welcome message
+- st.rerun()
+
+PROFILES PAGE:
+Move saved profile UI here.
+It should allow:
+- select saved profile
+- load profile
+- delete profile
+- show profile preview if already implemented
+
+On profile load:
+- set st.session_state.brand_config = loaded profile
+- set st.session_state.setup_done = True
+- write loaded profile to active_brand.json
+- reset welcome message
+- set st.session_state.current_page = "board"
+- st.rerun()
+
+BOARD PAGE:
+Move current chat/brand board here.
+It should show:
+- active brand header
+- chat messages
+- chat input
+- sidebar controls
+- clear chat
+- reset/new brand if already present
+
+If user opens board without brand_config:
+- show warning: "Create or load a brand profile first."
+- show buttons: Create assistant, Load saved profile
+
+SIDEBAR:
+On board page, add navigation buttons:
+- Home
+- Create New Assistant
+- Saved Profiles
+- Brand Board
+
+IMPORTANT STRUCTURE:
+At the bottom of app.py, rendering should be controlled like:
+
+if st.session_state.current_page == "home":
+    render_home_page()
+elif st.session_state.current_page == "create":
+    render_create_page()
+elif st.session_state.current_page == "profiles":
+    render_profiles_page()
+elif st.session_state.current_page == "board":
+    render_board_page()
+
+You may create these functions:
+- render_top_nav()
+- render_home_page()
+- render_create_page()
+- render_profiles_page()
+- render_board_page()
+
+DO NOT just scroll to sections.
+DO NOT leave setup form visible on homepage.
+DO NOT leave saved profiles visible on homepage.
+DO NOT fake buttons.
+The buttons must actually switch pages.
+
+AFTER CHANGES:
+Print:
+1. exact files changed
+2. confirm only app.py changed
+3. confirm current_page is implemented
+4. confirm homepage no longer shows setup form
+5. confirm Create assistant button opens create page
+6. confirm Load saved profile button opens profiles page
+7. confirm Launch Assistant opens board page
+8. confirm loading a profile opens board page
+9. confirm chat still works
+10. confirm CSV upload still works

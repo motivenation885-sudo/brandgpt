@@ -861,6 +861,18 @@ if "setup_done"       not in st.session_state: st.session_state.setup_done = Fal
 if "parsed_catalogue" not in st.session_state: st.session_state.parsed_catalogue = None
 if "prefill"          not in st.session_state: st.session_state.prefill = {}
 
+# ── Page navigation ───────────────────────────────────────────────────────────
+if "current_page" not in st.session_state:
+    if st.session_state.setup_done and st.session_state.brand_config:
+        st.session_state.current_page = "board"
+    else:
+        st.session_state.current_page = "home"
+
+
+def go_to_page(page_name: str):
+    st.session_state.current_page = page_name
+    st.rerun()
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SAVED PROFILE HELPERS
@@ -1184,12 +1196,43 @@ def _activate_profile(profile: dict):
     with open("active_brand.json", "w") as f:
         json.dump(profile, f)
     save_brand_file(profile)
+    st.session_state.current_page = "board"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# SETUP PAGE
+# TOP NAVIGATION
 # ══════════════════════════════════════════════════════════════════════════════
-if not st.session_state.setup_done:
+def render_top_nav():
+    has_brand = bool(st.session_state.brand_config)
+    cols = st.columns([3, 1, 1, 1, 1])
+    with cols[0]:
+        st.markdown(
+            '<div style="display:flex;align-items:center;gap:10px;padding-top:6px;">'
+            '<div class="halo-logo-mark" style="width:32px;height:32px;"></div>'
+            '<div style="font-weight:700;font-size:1.1rem;">Halo</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+    with cols[1]:
+        if st.button("Home", use_container_width=True, key="nav_home"):
+            go_to_page("home")
+    with cols[2]:
+        if st.button("Create", use_container_width=True, key="nav_create"):
+            go_to_page("create")
+    with cols[3]:
+        if st.button("Profiles", use_container_width=True, key="nav_profiles"):
+            go_to_page("profiles")
+    with cols[4]:
+        if st.button("Board", use_container_width=True, key="nav_board", disabled=not has_brand):
+            go_to_page("board")
+    st.markdown("<br>", unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# HOME PAGE
+# ══════════════════════════════════════════════════════════════════════════════
+def render_home_page():
+    render_top_nav()
 
     # ── Top brand bar ─────────────────────────────────────────────────────────
     st.markdown("""
@@ -1209,19 +1252,29 @@ if not st.session_state.setup_done:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Hero — two-column ─────────────────────────────────────────────────────
-    st.markdown("""
-    <div class="hero-shell">
+    # ── Hero — two-column with real CTA buttons ───────────────────────────────
+    hero_left, hero_right = st.columns([1, 1], gap="large")
+    with hero_left:
+        st.markdown("""
         <div class="hero-copy">
             <span class="hero-eyebrow">Built for D2C brands running WhatsApp sales</span>
             <h1>Turn ad clicks into guided WhatsApp sales.</h1>
             <p>Upload your catalogue, offers, FAQs, and policies. Halo answers product questions, qualifies buyers, and guides customers from ad interest to checkout.</p>
-            <div class="hero-cta-row">
-                <span class="halo-primary-button">Create assistant</span>
-                <span class="halo-secondary-button">Load saved profile</span>
-            </div>
-            <div class="hero-trust">Understands <strong>product IDs, campaign codes, sizes, colors, prices, offers,</strong> and links.</div>
         </div>
+        """, unsafe_allow_html=True)
+        cta_a, cta_b = st.columns(2)
+        with cta_a:
+            if st.button("Create assistant", use_container_width=True, key="home_cta_create", type="primary"):
+                go_to_page("create")
+        with cta_b:
+            if st.button("Load saved profile", use_container_width=True, key="home_cta_load"):
+                go_to_page("profiles")
+        st.markdown(
+            '<div class="hero-trust">Understands <strong>product IDs, campaign codes, sizes, colors, prices, offers,</strong> and links.</div>',
+            unsafe_allow_html=True,
+        )
+    with hero_right:
+        st.markdown("""
         <div class="hero-demo-card">
             <div class="demo-toprow">
                 <span class="demo-title-txt">AD LEAD CAPTURED</span>
@@ -1242,8 +1295,7 @@ if not st.session_state.setup_done:
                 <span class="demo-product-chip">Product link</span>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
     # ── Feature cards ─────────────────────────────────────────────────────────
     st.markdown("""
@@ -1251,30 +1303,22 @@ if not st.session_state.setup_done:
     <div class="section-title" style="margin-bottom:16px;">Product intelligence, built in.</div>
     <div class="feature-grid">
         <div class="feature-card">
-            <div class="feature-icon fi-catalogue">
-                <div class="fi-inner fi-inner-catalogue"></div>
-            </div>
+            <div class="feature-icon fi-catalogue"><div class="fi-inner fi-inner-catalogue"></div></div>
             <h3>Product answers from catalogue</h3>
             <p>Answer price, size, color, stock, delivery, exchange, and product link questions from uploaded product data.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon fi-campaign">
-                <div class="fi-inner fi-inner-campaign"></div>
-            </div>
+            <div class="feature-icon fi-campaign"><div class="fi-inner fi-inner-campaign"></div></div>
             <h3>Campaign-code aware</h3>
             <p>When leads arrive via SHIRT001 or JEANS001, Halo starts with that exact product instead of a generic reply.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon fi-guided">
-                <div class="fi-inner fi-inner-guided"></div>
-            </div>
+            <div class="feature-icon fi-guided"><div class="fi-inner fi-inner-guided"></div></div>
             <h3>Guided selling</h3>
             <p>Ask the right follow-up: size, color, budget, use-case, or checkout intent — in the customer's natural flow.</p>
         </div>
         <div class="feature-card">
-            <div class="feature-icon fi-upsell">
-                <div class="fi-inner fi-inner-upsell"></div>
-            </div>
+            <div class="feature-icon fi-upsell"><div class="fi-inner fi-inner-upsell"></div></div>
             <h3>Smart upsell support</h3>
             <p>Suggest matching products, combos, and offers only when they exist in brand data. No hallucinations.</p>
         </div>
@@ -1325,7 +1369,23 @@ if not st.session_state.setup_done:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── Saved Brand Profiles ──────────────────────────────────────────────────
+    # ── Bottom CTA buttons ────────────────────────────────────────────────────
+    st.markdown("<br>", unsafe_allow_html=True)
+    bc1, bc2, _ = st.columns([1, 1, 2])
+    with bc1:
+        if st.button("Create assistant", use_container_width=True, key="home_bottom_create", type="primary"):
+            go_to_page("create")
+    with bc2:
+        if st.button("Load saved profile", use_container_width=True, key="home_bottom_load"):
+            go_to_page("profiles")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PROFILES PAGE
+# ══════════════════════════════════════════════════════════════════════════════
+def render_profiles_page():
+    render_top_nav()
+
     profiles = load_saved_profiles()
 
     st.markdown("""
@@ -1335,68 +1395,86 @@ if not st.session_state.setup_done:
     </div>
     """, unsafe_allow_html=True)
 
-    with st.container():
-        if not profiles:
-            st.markdown(
-                '<p style="color:#9CA3AF;font-size:0.88rem;margin:0 0 24px 0;">'
-                'No saved profiles yet — fill the form below and launch to create your first profile.</p>',
-                unsafe_allow_html=True,
-            )
-        else:
-            profile_names = list(profiles.keys())
-            selected_profile = st.selectbox(
-                "Load saved profile",
-                ["— Select a saved profile —"] + profile_names,
-                key="profile_selector",
-                label_visibility="collapsed",
-            )
-            profile_chosen = selected_profile != "— Select a saved profile —"
+    if not profiles:
+        st.markdown(
+            '<p style="color:#9CA3AF;font-size:0.88rem;margin:0 0 24px 0;">'
+            'No saved profiles yet — create your first assistant to save a profile.</p>',
+            unsafe_allow_html=True,
+        )
+        if st.button("Create assistant", key="profiles_empty_create", type="primary"):
+            go_to_page("create")
+        return
 
-            btn_col1, btn_col2, btn_col3 = st.columns([2, 2, 1])
-            with btn_col1:
-                if st.button(
-                    "⚡  Quick Launch",
-                    use_container_width=True,
-                    disabled=not profile_chosen,
-                    key="quick_launch_btn",
-                    help="Activate this brand instantly without editing the form",
-                ):
-                    _activate_profile(profiles[selected_profile])
-                    st.toast(f"'{selected_profile}' launched!", icon="✅")
-                    st.rerun()
-            with btn_col2:
-                if st.button(
-                    "📋  Fill Form",
-                    use_container_width=True,
-                    disabled=not profile_chosen,
-                    key="fill_form_btn",
-                    help="Pre-fill the setup form with this profile's data",
-                ):
-                    prof = profiles[selected_profile]
-                    st.session_state.prefill = prof
-                    if prof.get("uploaded_products"):
-                        st.session_state.parsed_catalogue = {
-                            "products": prof["uploaded_products"],
-                            "columns": prof.get("uploaded_product_columns", []),
-                            "context": prof.get("uploaded_product_context", ""),
-                            "campaigns": prof.get("campaign_lookup", ""),
-                        }
-                    else:
-                        st.session_state.parsed_catalogue = None
-                    st.rerun()
-            with btn_col3:
-                if st.button(
-                    "🗑",
-                    use_container_width=True,
-                    disabled=not profile_chosen,
-                    key="delete_profile_btn",
-                    help="Delete this saved profile",
-                ):
-                    delete_profile(selected_profile)
-                    if st.session_state.prefill.get("name") == selected_profile:
-                        st.session_state.prefill = {}
-                    st.toast(f"Profile '{selected_profile}' deleted.")
-                    st.rerun()
+    profile_names = list(profiles.keys())
+    selected_profile = st.selectbox(
+        "Load saved profile",
+        ["— Select a saved profile —"] + profile_names,
+        key="profile_selector",
+        label_visibility="collapsed",
+    )
+    profile_chosen = selected_profile != "— Select a saved profile —"
+
+    btn_col1, btn_col2, btn_col3 = st.columns([2, 2, 1])
+    with btn_col1:
+        if st.button(
+            "⚡  Quick Launch",
+            use_container_width=True,
+            disabled=not profile_chosen,
+            key="quick_launch_btn",
+            help="Activate this brand instantly without editing the form",
+        ):
+            _activate_profile(profiles[selected_profile])
+            st.toast(f"'{selected_profile}' launched!", icon="✅")
+            st.rerun()
+    with btn_col2:
+        if st.button(
+            "📋  Fill Form",
+            use_container_width=True,
+            disabled=not profile_chosen,
+            key="fill_form_btn",
+            help="Pre-fill the setup form with this profile's data",
+        ):
+            prof = profiles[selected_profile]
+            st.session_state.prefill = prof
+            if prof.get("uploaded_products"):
+                st.session_state.parsed_catalogue = {
+                    "products": prof["uploaded_products"],
+                    "columns": prof.get("uploaded_product_columns", []),
+                    "context": prof.get("uploaded_product_context", ""),
+                    "campaigns": prof.get("campaign_lookup", ""),
+                }
+            else:
+                st.session_state.parsed_catalogue = None
+            go_to_page("create")
+    with btn_col3:
+        if st.button(
+            "🗑",
+            use_container_width=True,
+            disabled=not profile_chosen,
+            key="delete_profile_btn",
+            help="Delete this saved profile",
+        ):
+            delete_profile(selected_profile)
+            if st.session_state.prefill.get("name") == selected_profile:
+                st.session_state.prefill = {}
+            st.toast(f"Profile '{selected_profile}' deleted.")
+            st.rerun()
+
+    if profile_chosen:
+        prof = profiles[selected_profile]
+        st.markdown(
+            f'<div class="catalogue-loaded-notice" style="margin-top:18px;">'
+            f'<strong>{prof.get("name","")}</strong> · {prof.get("industry","")} · {prof.get("tone","")}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# CREATE PAGE
+# ══════════════════════════════════════════════════════════════════════════════
+def render_create_page():
+    render_top_nav()
 
     # ── Setup form heading ────────────────────────────────────────────────────
     st.markdown("""
@@ -1445,7 +1523,6 @@ if not st.session_state.setup_done:
             st.error(err)
             if detected:
                 st.caption(f"Detected columns: {', '.join(detected)}")
-            # Don't wipe a valid prefill catalogue on parse error
         else:
             ctx = format_product_catalogue_for_prompt(products_parsed)
             campaigns = build_campaign_lookup(products_parsed)
@@ -1592,29 +1669,37 @@ if not st.session_state.setup_done:
                 }
                 st.session_state.brand_config = brand_cfg
                 st.session_state.setup_done = True
-                st.session_state.prefill = {}  # clear prefill after launch
+                st.session_state.prefill = {}
 
-                # Save active brand for webhook.py
                 with open("active_brand.json", "w") as f:
                     json.dump(brand_cfg, f)
 
-                # Multi-tenant: also save to brands/{brand_id}.json for webhook routing
                 save_brand_file(brand_cfg)
-
-                # Auto-save profile
                 save_profile(brand_name, brand_cfg)
 
                 welcome = f"Hey! 👋 Main {brand_name} ka assistant hoon. Kaise help kar sakta hoon aapki?"
-                st.session_state.messages.append({"role": "assistant", "content": welcome})
+                st.session_state.messages = [{"role": "assistant", "content": welcome}]
                 st.toast(f"Profile '{brand_name}' saved — you can load it anytime.", icon="✅")
+                st.session_state.current_page = "board"
                 st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CHAT PAGE
+# BOARD PAGE
 # ══════════════════════════════════════════════════════════════════════════════
-else:
+def render_board_page():
     brand = st.session_state.brand_config
+
+    if not brand:
+        st.warning("Create or load a brand profile first.")
+        c1, c2, _ = st.columns([1, 1, 2])
+        with c1:
+            if st.button("Create assistant", use_container_width=True, key="board_empty_create", type="primary"):
+                go_to_page("create")
+        with c2:
+            if st.button("Load saved profile", use_container_width=True, key="board_empty_load"):
+                go_to_page("profiles")
+        return
 
     uploaded_products = brand.get("uploaded_products", []) or []
     has_catalogue = len(uploaded_products) > 0
@@ -1626,6 +1711,19 @@ else:
     with st.sidebar:
         st.markdown('<div class="sidebar-logo">◈ Halo</div>', unsafe_allow_html=True)
         st.markdown('<div class="sidebar-tagline">AI WhatsApp Sales Assistant</div>', unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Navigation
+        st.markdown('<div class="section-label">Navigation</div>', unsafe_allow_html=True)
+        if st.button("🏠  Home", use_container_width=True, key="sb_nav_home"):
+            go_to_page("home")
+        if st.button("➕  Create New Assistant", use_container_width=True, key="sb_nav_create"):
+            go_to_page("create")
+        if st.button("📂  Saved Profiles", use_container_width=True, key="sb_nav_profiles"):
+            go_to_page("profiles")
+        if st.button("💬  Brand Board", use_container_width=True, key="sb_nav_board"):
+            go_to_page("board")
 
         st.markdown("---")
 
@@ -1694,6 +1792,7 @@ else:
             st.session_state.messages = []
             st.session_state.brand_config = None
             st.session_state.parsed_catalogue = None
+            st.session_state.current_page = "create"
             st.rerun()
 
         st.markdown("---")
@@ -1749,3 +1848,19 @@ else:
                     st.session_state.messages.append({"role": "assistant", "content": response})
                 except Exception as e:
                     st.error(f"Kuch error aaya: {str(e)}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PAGE DISPATCHER
+# ══════════════════════════════════════════════════════════════════════════════
+_page = st.session_state.current_page
+if _page == "home":
+    render_home_page()
+elif _page == "create":
+    render_create_page()
+elif _page == "profiles":
+    render_profiles_page()
+elif _page == "board":
+    render_board_page()
+else:
+    render_home_page()
